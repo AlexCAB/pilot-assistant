@@ -44,7 +44,7 @@ class Dashboard(QGraphicsView):
         # Init UI
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setGeometry(100, 100, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
+        self.setGeometry(0, 0, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
         self.setStyleSheet("border: 0px")
         self.setWindowTitle("Dashboard")
         self.setWindowFlags(Qt.FramelessWindowHint)
