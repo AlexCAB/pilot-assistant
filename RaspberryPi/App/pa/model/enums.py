@@ -30,4 +30,3 @@ class TurnIndication(Enum):
     left = 1
     right = 2
     both = 3
-

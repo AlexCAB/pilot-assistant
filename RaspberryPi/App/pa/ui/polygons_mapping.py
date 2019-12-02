@@ -145,91 +145,91 @@ class PolygonsMapping(object):
                 QPointF(0, 12), QPointF(25, 12), QPointF(25, 0), QPointF(48, 23),
                 QPointF(25, 47), QPointF(25, 35), QPointF(0, 35)]}}
 
-    INDICATORS = {
-        "O": {
+    WARNING_INDICATORS = {
+        "OIL": {
             "C": QPointF(283, 438),
             "P": [
-                QPolygonF([QPointF(2, 27), QPointF(18, 18), QPointF(18, 27), QPointF(5, 34)]),
-                QPolygonF([QPointF(19, 2), QPointF(48, 2), QPointF(69, 27), QPointF(47, 15), QPointF(41, 22), QPointF(18, 22)]),
-                QPolygonF([QPointF(23, 27), QPointF(37, 29), QPointF(22, 29)]),
-                QPolygonF([QPointF(69, 27), QPointF(71, 24), QPointF(73, 25)]),
-                QPolygonF([QPointF(76, 18), QPointF(74, 13), QPointF(75, 10), QPointF(78, 14)])]},
-        "W": {
+                [QPointF(2, 27), QPointF(18, 18), QPointF(18, 27), QPointF(5, 34)],
+                [QPointF(19, 2), QPointF(48, 2), QPointF(69, 27), QPointF(47, 15), QPointF(41, 22), QPointF(18, 22)],
+                [QPointF(23, 27), QPointF(37, 29), QPointF(22, 29)],
+                [QPointF(69, 27), QPointF(71, 24), QPointF(73, 25)],
+                [QPointF(76, 18), QPointF(74, 13), QPointF(75, 10), QPointF(78, 14)]]},
+        "WATTER": {
             "C": QPointF(139, 367),
             "P": [
-                QPolygonF([QPointF(13, 1), QPointF(41, 1)]),
-                QPolygonF([QPointF(0, 12), QPointF(18, 12)]),
-                QPolygonF([QPointF(36, 12), QPointF(53, 12)]),
-                QPolygonF([QPointF(24, 14), QPointF(23, 8), QPointF(31, 8), QPointF(31, 15)]),
-                QPolygonF([QPointF(26, 15), QPointF(29, 15), QPointF(29, 46), QPointF(26, 46)]),
-                QPolygonF([QPointF(28, 23), QPointF(35, 23)]),
-                QPolygonF([QPointF(28, 30), QPointF(35, 30)]),
-                QPolygonF([QPointF(28, 37), QPointF(35, 37)]),
-                QPolygonF([QPointF(28, 44), QPointF(35, 44)])]}}
+                [QPointF(13, 1), QPointF(41, 1)],
+                [QPointF(0, 12), QPointF(18, 12)],
+                [QPointF(36, 12), QPointF(53, 12)],
+                [QPointF(24, 14), QPointF(23, 8), QPointF(31, 8), QPointF(31, 15)],
+                [QPointF(26, 15), QPointF(29, 15), QPointF(29, 46), QPointF(26, 46)],
+                [QPointF(28, 23), QPointF(35, 23)],
+                [QPointF(28, 30), QPointF(35, 30)],
+                [QPointF(28, 37), QPointF(35, 37)],
+                [QPointF(28, 44), QPointF(35, 44)]]}}
 
     SPEED_NUMBERS = {
-        "A": QPolygonF([QPointF(11, 142), QPointF(22, 137), QPointF(59, 136), QPointF(63, 152), QPointF(18, 152),  QPointF(11, 146)]),
-        "B": QPolygonF([QPointF(7, 80), QPointF(17, 91), QPointF(20, 131), QPointF(10, 137)]),
-        "C": QPolygonF([QPointF(0, 15), QPointF(12, 21), QPointF(15, 62), QPointF(6, 71)]),
-        "D": QPolygonF([QPointF(0, 9), QPointF(0, 5), QPointF(5, 0), QPointF(53, 0), QPointF(50, 15), QPointF(13, 15)]),
-        "E": QPolygonF([QPointF(58, 0), QPointF(64, 5), QPointF(70, 72), QPointF(58, 62), QPointF(54, 15)]),
-        "F": QPolygonF([QPointF(60, 90), QPointF(70, 79), QPointF(74, 145), QPointF(69, 152), QPointF(63, 135)]),
-        "G": QPolygonF([QPointF(12, 76), QPointF(17, 68), QPointF(58, 68), QPointF(63, 77), QPointF(59, 84), QPointF(17, 84)])}
+        "A": [QPointF(11, 142), QPointF(22, 137), QPointF(59, 136), QPointF(63, 152), QPointF(18, 152),  QPointF(11, 146)],
+        "B": [QPointF(60, 90), QPointF(70, 79), QPointF(74, 145), QPointF(69, 152), QPointF(63, 135)],
+        "C": [QPointF(58, 0), QPointF(64, 5), QPointF(70, 72), QPointF(58, 62), QPointF(54, 15)],
+        "D": [QPointF(0, 9), QPointF(0, 5), QPointF(5, 0), QPointF(53, 0), QPointF(50, 15), QPointF(13, 15)],
+        "E": [QPointF(0, 15), QPointF(12, 21), QPointF(15, 62), QPointF(6, 71)],
+        "F": [QPointF(7, 80), QPointF(17, 91), QPointF(20, 131), QPointF(10, 137)],
+        "G": [QPointF(12, 76), QPointF(17, 68), QPointF(58, 68), QPointF(63, 77), QPointF(59, 84), QPointF(17, 84)]}
 
     STANDARD_NUMBERS = {
-        "A": QPolygonF([QPointF(4, 44), QPointF(6, 42), QPointF(22, 42), QPointF(24, 44), QPointF(22, 46), QPointF(5, 46)]),
-        "B": QPolygonF([QPointF(0, 26), QPointF(2, 24), QPointF(4, 26), QPointF(4, 41), QPointF(2, 43), QPointF(0, 41)]),
-        "C": QPolygonF([QPointF(0, 5), QPointF(2, 3), QPointF(4, 5), QPointF(4, 20), QPointF(2, 22), QPointF(0, 20)]),
-        "D": QPolygonF([QPointF(5, 0), QPointF(22, 0), QPointF(24, 2), QPointF(22, 4), QPointF(6, 4), QPointF(4, 1)]),
-        "E": QPolygonF([QPointF(23, 6), QPointF(26, 4), QPointF(27, 5), QPointF(27, 20), QPointF(25, 22), QPointF(23, 20)]),
-        "F": QPolygonF([QPointF(23, 26), QPointF(25, 24), QPointF(27, 26), QPointF(27, 41), QPointF(26, 42), QPointF(23, 40)]),
-        "G": QPolygonF([QPointF(4, 23), QPointF(6, 21), QPointF(21, 21), QPointF(23, 23), QPointF(21, 25), QPointF(6, 25)])}
+        "A": [QPointF(4, 44), QPointF(6, 42), QPointF(22, 42), QPointF(24, 44), QPointF(22, 46), QPointF(5, 46)],
+        "B": [QPointF(23, 26), QPointF(25, 24), QPointF(27, 26), QPointF(27, 41), QPointF(26, 42), QPointF(23, 40)],
+        "C": [QPointF(23, 6), QPointF(26, 4), QPointF(27, 5), QPointF(27, 20), QPointF(25, 22), QPointF(23, 20)],
+        "D": [QPointF(5, 0), QPointF(22, 0), QPointF(24, 2), QPointF(22, 4), QPointF(6, 4), QPointF(4, 1)],
+        "E": [QPointF(0, 5), QPointF(2, 3), QPointF(4, 5), QPointF(4, 20), QPointF(2, 22), QPointF(0, 20)],
+        "F": [QPointF(0, 26), QPointF(2, 24), QPointF(4, 26), QPointF(4, 41), QPointF(2, 43), QPointF(0, 41)],
+        "G": [QPointF(4, 23), QPointF(6, 21), QPointF(21, 21), QPointF(23, 23), QPointF(21, 25), QPointF(6, 25)]}
 
     NUMBER_TO_SEGMENTS = {
-        0: ["A", "B", "C", "D", "E", "F"],
-        1: ["B", "C"],
-        2: ["A", "B", "G", "E", "D"],
-        3: ["A", "B", "G", "C", "D"],
-        4: ["F", "G", "B", "C"],
-        5: ["A", "F", "G", "C", "D"],
-        6: ["A", "C", "D", "E", "F", "G"],
-        7: ["A", "B", "C"],
-        8: ["A", "B", "C", "D", "E", "F", "G"],
-        9: ["A", "B", "C", "D", "F", "G"]}
+        0: (["A", "B", "C", "D", "E", "F"], ["G"]),
+        1: (["B", "C"], ["A", "D", "E", "F", "G"]),
+        2: (["A", "B", "G", "E", "D"], ["C", "F"]),
+        3: (["A", "B", "G", "C", "D"], ["E", "F"]),
+        4: (["F", "G", "B", "C"], ["A", "D", "E"]),
+        5: (["A", "F", "G", "C", "D"], ["B", "E"]),
+        6: (["A", "C", "D", "E", "F", "G"], ["B"]),
+        7: (["A", "B", "C"], ["D", "E", "F", "G"]),
+        8: (["A", "B", "C", "D", "E", "F", "G"], []),
+        9: (["A", "B", "C", "D", "F", "G"], ["E"])}
 
     GEAR_NUMBER = {
-        "C": QPointF(182, 360),
+        "C": QPointF(0, 178),
         "P": {
-             "A": QPolygonF([QPointF(4, 101), QPointF(14, 92), QPointF(74, 92), QPointF(84, 101)]),
-             "B": QPolygonF([QPointF(0, 55), QPointF(5, 51), QPointF(12, 57), QPointF(12, 91), QPointF(0, 99)]),
-             "C": QPolygonF([QPointF(0, 2), QPointF(12, 10), QPointF(12, 44), QPointF(5, 49), QPointF(0, 45)]),
-             "D": QPolygonF([QPointF(4, 0), QPointF(84, 0), QPointF(74, 8), QPointF(14, 8)]),
-             "E": QPolygonF([QPointF(76, 10), QPointF(88, 2), QPointF(88, 45), QPointF(82, 49), QPointF(76, 44)]),
-             "F": QPolygonF([QPointF(76, 56), QPointF(82, 51), QPointF(88, 56), QPointF(88, 99), QPointF(76, 90)]),
-             "G": QPolygonF([QPointF(10, 50), QPointF(15, 46), QPointF(73, 46), QPointF(78, 50), QPointF(74, 54), QPointF(13, 54)]),
-             "M": QPolygonF([QPointF(43, 43), QPointF(66, 11), QPointF(73, 11), QPointF(73, 20), QPointF(56, 43)]),
-             "J": QPolygonF([QPointF(15, 89), QPointF(15, 81), QPointF(33, 57), QPointF(47, 57), QPointF(23, 89)])},
+             "A": [QPointF(4, 101), QPointF(14, 92), QPointF(74, 92), QPointF(84, 101)],
+             "B": [QPointF(76, 56), QPointF(82, 51), QPointF(88, 56), QPointF(88, 99), QPointF(76, 90)],
+             "C": [QPointF(76, 10), QPointF(88, 2), QPointF(88, 45), QPointF(82, 49), QPointF(76, 44)],
+             "D": [QPointF(4, 0), QPointF(84, 0), QPointF(74, 8), QPointF(14, 8)],
+             "E": [QPointF(0, 2), QPointF(12, 10), QPointF(12, 44), QPointF(5, 49), QPointF(0, 45)],
+             "F": [QPointF(0, 55), QPointF(5, 51), QPointF(12, 57), QPointF(12, 91), QPointF(0, 99)],
+             "G": [QPointF(10, 50), QPointF(15, 46), QPointF(73, 46), QPointF(78, 50), QPointF(74, 54), QPointF(13, 54)],
+             "M": [QPointF(43, 43), QPointF(66, 11), QPointF(73, 11), QPointF(73, 20), QPointF(56, 43)],
+             "J": [QPointF(15, 89), QPointF(15, 81), QPointF(33, 57), QPointF(47, 57), QPointF(23, 89)]},
         "M": {
-            "N": ["B", "C", "E", "F", "M", "J"],
-            "1": ["B", "C"],
-            "2": ["A", "B", "G", "E", "D"],
-            "3": ["A", "B", "G", "C", "D"],
-            "4": ["F", "G", "B", "C"],
-            "5": ["A", "F", "G", "C", "D"]}}
+            0: [["B", "C", "E", "F", "M", "J"], ["A", "D"]],
+            1: [["B", "C"], ["A", "D", "E", "F", "G", "M", "J", "M", "J"]],
+            2: [["A", "B", "G", "E", "D"], ["C", "F", "M", "J"]],
+            3: [["A", "B", "G", "C", "D"], ["E", "F", "M", "J"]],
+            4: [["F", "G", "B", "C"], ["A", "D", "E", "M", "J"]],
+            5: [["A", "F", "G", "C", "D"], ["B", "E", "M", "J"]]}}
 
     SPEEDOMETER = {
-        1: QPointF(273, 54),
+        100: QPointF(273, 54),
         10: QPointF(349, 54),
-        100: QPointF(425, 54)}
+        1: QPointF(425, 54)}
 
     STOPWATCH = {
-        "MS1":  QPointF(478, 0),
+        "MS01":  QPointF(478, 0),
         "MS10":  QPointF(445, 0),
-        "S1":  QPointF(405, 0),
+        "S01":  QPointF(405, 0),
         "S10":  QPointF(372, 0),
-        "M1":   QPointF(332, 0),
+        "M01":   QPointF(332, 0),
         "M10":   QPointF(299, 0),
-        "H1":   QPointF(259, 0)}
+        "H01":   QPointF(259, 0)}
 
     OIL_MANOMETER = {
         0.01: QPointF(100, 433),
