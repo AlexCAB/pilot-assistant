@@ -27,9 +27,9 @@ class PolygonsMapping(object):
         10: QPolygonF([QPointF(79, 131), QPointF(84, 141), QPointF(153, 126), QPointF(150, 116)]),
         12: QPolygonF([QPointF(91, 153), QPointF(94, 158), QPointF(159, 141), QPointF(157, 136)]),
         14: QPolygonF([QPointF(103, 170), QPointF(105, 175), QPointF(165, 157), QPointF(163, 152)]),
-        16: QPolygonF([QPointF(115, 169), QPointF(118, 194), QPointF(174, 173), QPointF(171, 169)]),
+        16: QPolygonF([QPointF(115, 189), QPointF(118, 194), QPointF(174, 173), QPointF(171, 169)]),
         18: QPolygonF([QPointF(127, 208), QPointF(130, 212), QPointF(181, 190), QPointF(179, 186)]),
-        20: QPolygonF([QPointF(141, 227), QPointF(146, 253), QPointF(194, 211), QPointF(189, 201)]),
+        20: QPolygonF([QPointF(141, 227), QPointF(188, 202), QPointF(194, 211), QPointF(146, 235)]),
         22: QPolygonF([QPointF(156, 248), QPointF(159, 252), QPointF(203, 225), QPointF(200, 221)]),
         24: QPolygonF([QPointF(170, 265), QPointF(173, 269), QPointF(214, 240), QPointF(211, 237)]),
         26: QPolygonF([QPointF(183, 280), QPointF(187, 284), QPointF(225, 254), QPointF(222, 250)]),
@@ -43,15 +43,15 @@ class PolygonsMapping(object):
         42: QPolygonF([QPointF(320, 384), QPointF(324, 387), QPointF(346, 343), QPointF(341, 340)]),
         44: QPolygonF([QPointF(338, 393), QPointF(342, 395), QPointF(362, 349), QPointF(357, 347)]),
         46: QPolygonF([QPointF(357, 400), QPointF(362, 402), QPointF(379, 357), QPointF(374, 355)]),
-        48: QPolygonF([QPointF(376, 407), QPointF(380, 409), QPointF(369, 364), QPointF(391, 362)]),
+        48: QPolygonF([QPointF(376, 407), QPointF(380, 409), QPointF(396, 364), QPointF(391, 362)]),
         50: QPolygonF([QPointF(395, 412), QPointF(404, 415), QPointF(418, 370), QPointF(409, 368)]),
         52: QPolygonF([QPointF(416, 418), QPointF(421, 420), QPointF(434, 376), QPointF(429, 374)]),
         54: QPolygonF([QPointF(436, 422), QPointF(441, 424), QPointF(451, 380), QPointF(446, 379)]),
         56: QPolygonF([QPointF(455, 426), QPointF(460, 428), QPointF(469, 383), QPointF(464, 382)]),
-        58: QPolygonF([QPointF(473, 429), QPointF(478, 431), QPointF(486, 388), QPointF(461, 386)]),
+        58: QPolygonF([QPointF(473, 429), QPointF(481, 387), QPointF(486, 388), QPointF(478, 430)]),
         60: QPolygonF([QPointF(493, 432), QPointF(502, 434), QPointF(509, 390), QPointF(499, 390)]),
         62: QPolygonF([QPointF(516, 435), QPointF(520, 436), QPointF(526, 393), QPointF(521, 392)]),
-        64: QPolygonF([QPointF(533, 437), QPointF(543, 397), QPointF(543, 396), QPointF(538, 395)]),
+        64: QPolygonF([QPointF(533, 437), QPointF(537, 397), QPointF(543, 396), QPointF(538, 438)]),
         66: QPolygonF([QPointF(552, 439), QPointF(556, 439), QPointF(561, 397), QPointF(556, 397)]),
         68: QPolygonF([QPointF(570, 440), QPointF(575, 441), QPointF(579, 400), QPointF(574, 399)]),
         70: QPolygonF([QPointF(589, 442), QPointF(599, 442), QPointF(602, 402), QPointF(592, 401)]),
@@ -62,7 +62,7 @@ class PolygonsMapping(object):
         80: QPolygonF([QPointF(685, 446), QPointF(694, 446), QPointF(695, 406), QPointF(685, 406)]),
         82: QPolygonF([QPointF(706, 447), QPointF(711, 447), QPointF(711, 406), QPointF(707, 406)]),
         84: QPolygonF([QPointF(726, 447), QPointF(731, 447), QPointF(731, 407), QPointF(726, 407)]),
-        86: QPolygonF([QPointF(746, 448), QPointF(800, 448), QPointF(800, 408), QPointF(746, 408)])}
+        86: QPolygonF([QPointF(746, 448), QPointF(799, 448), QPointF(799, 408), QPointF(746, 408)])}
 
     TACHOMETER_GEARBOX = {
         0: QPolygonF([QPointF(121, 0), QPointF(128, 38), QPointF(215, 32), QPointF(227, 0)]),
@@ -82,9 +82,9 @@ class PolygonsMapping(object):
         28: QPolygonF([QPointF(239, 259), QPointF(242, 264), QPointF(278, 232), QPointF(275, 228)]),
         30: QPolygonF([QPointF(250, 272), QPointF(258, 279), QPointF(290, 244), QPointF(283, 237)]),
         32: QPolygonF([QPointF(266, 285), QPointF(270, 289), QPointF(300, 251), QPointF(296, 248)]),
-        34: QPolygonF([QPointF(280, 269), QPointF(283, 300), QPointF(312, 261), QPointF(309, 258)]),
+        34: QPolygonF([QPointF(280, 297), QPointF(308, 258), QPointF(312, 261), QPointF(283, 300)]),
         36: QPolygonF([QPointF(295, 306), QPointF(299, 311), QPointF(325, 270), QPointF(320, 267)]),
-        38: QPolygonF([QPointF(311, 217), QPointF(315, 320), QPointF(338, 279), QPointF(334, 276)]),
+        38: QPolygonF([QPointF(311, 317), QPointF(315, 320), QPointF(338, 279), QPointF(334, 276)]),
         40: QPolygonF([QPointF(325, 325), QPointF(334, 330), QPointF(356, 289), QPointF(347, 283)]),
         42: QPolygonF([QPointF(343, 335), QPointF(348, 338), QPointF(368, 295), QPointF(364, 292)]),
         44: QPolygonF([QPointF(359, 342), QPointF(364, 345), QPointF(383, 301), QPointF(378, 299)]),
@@ -92,9 +92,9 @@ class PolygonsMapping(object):
         48: QPolygonF([QPointF(393, 357), QPointF(398, 359), QPointF(413, 314), QPointF(408, 312)]),
         50: QPolygonF([QPointF(410, 362), QPointF(420, 366), QPointF(433, 321), QPointF(424, 318)]),
         52: QPolygonF([QPointF(430, 369), QPointF(435, 371), QPointF(448, 325), QPointF(443, 324)]),
-        54: QPolygonF([QPointF(447, 373), QPointF(452, 375), QPointF(462, 330), QPointF(475, 328)]),
+        54: QPolygonF([QPointF(447, 373), QPointF(457, 329), QPointF(462, 330), QPointF(452, 376)]),
         56: QPolygonF([QPointF(465, 377), QPointF(470, 379), QPointF(478, 335), QPointF(474, 332)]),
-        58: QPolygonF([QPointF(482, 281), QPointF(487, 383), QPointF(495, 338), QPointF(490, 337)]),
+        58: QPolygonF([QPointF(482, 381), QPointF(487, 383), QPointF(495, 338), QPointF(490, 337)]),
         60: QPolygonF([QPointF(500, 384), QPointF(510, 387), QPointF(516, 342), QPointF(507, 340)]),
         62: QPolygonF([QPointF(522, 387), QPointF(527, 388), QPointF(533, 344), QPointF(528, 343)]),
         64: QPolygonF([QPointF(539, 390), QPointF(544, 392), QPointF(550, 346), QPointF(545, 345)]),
@@ -105,10 +105,10 @@ class PolygonsMapping(object):
         74: QPolygonF([QPointF(633, 398), QPointF(638, 398), QPointF(640, 354), QPointF(635, 354)]),
         76: QPolygonF([QPointF(651, 399), QPointF(656, 399), QPointF(657, 355), QPointF(652, 355)]),
         78: QPolygonF([QPointF(670, 400), QPointF(674, 400), QPointF(675, 356), QPointF(670, 356)]),
-        80: QPolygonF([QPointF(686, 400), QPointF(695, 400), QPointF(697, 356), QPointF(687, 456)]),
+        80: QPolygonF([QPointF(686, 400), QPointF(687, 356), QPointF(697, 356), QPointF(695, 400)]),
         82: QPolygonF([QPointF(707, 401), QPointF(712, 401), QPointF(712, 356), QPointF(707, 356)]),
         84: QPolygonF([QPointF(726, 401), QPointF(731, 401), QPointF(731, 357), QPointF(726, 357)]),
-        86: QPolygonF([QPointF(746, 401), QPointF(800, 401), QPointF(357, 800), QPointF(746, 357)])
+        86: QPolygonF([QPointF(746, 401), QPointF(746, 357), QPointF(799, 357), QPointF(799, 401)])
     }
 
     ACCELEROMETER = {

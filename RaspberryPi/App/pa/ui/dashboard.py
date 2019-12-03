@@ -26,7 +26,7 @@ class Dashboard(QGraphicsView):
 
     WINDOW_WIDTH = 800
     WINDOW_HEIGHT = 480
-    INACTIVE_COLOR = Qt.darkGray
+    INACTIVE_COLOR = Qt.red
     OK_COLOR = Qt.green
     WARNING_COLOR = Qt.yellow
     DANGEROUS_COLOR = Qt.red
@@ -53,36 +53,23 @@ class Dashboard(QGraphicsView):
         self.turnIndicatorLevel = DashboardLevel.inactive
         self.oilWarningIndicatorLevel = DashboardLevel.inactive
         self.watterWarningIndicatorLevel = DashboardLevel.inactive
-        self.gearNumberValue = 1  # 0 - 5
+        self.gearNumberValue = 0  # 0 - 5
         self.gearNumberLevel = DashboardLevel.inactive
-        self.speedometerValue = 789  # 0 - 999
+        self.speedometerValue = 0  # 0 - 999
         self.speedometerLevel = DashboardLevel.inactive
         self.stopwatchMills = 0  # 0 - 99
         self.stopwatchSeconds = 0  # 0 - 59
         self.stopwatchMinutes = 0  # 0 - 59
         self.stopwatchHours = 0  # 0 - 9
         self.stopwatchLevel = DashboardLevel.inactive
-
         self.oilManometerValue = 0.0  # 0.0 - 9.99
         self.oilManometerLevel = DashboardLevel.inactive
-
         self.oilThermometerValue = 0  # 0 - 999
         self.oilThermometerLevel = DashboardLevel.inactive
-
         self.watterThermometerValue = 0  # 0 - 999
         self.watterThermometerLevel = DashboardLevel.inactive
-
-        self.odometerThermometerValue = 0  # 0 - 9999
-        self.odometerThermometerLevel = DashboardLevel.inactive
-
-
-        # TODO Add more
-
-
-
-
-
-
+        self.odometerValue = 0  # 0 - 9999
+        self.odometerLevel = DashboardLevel.inactive
         # Init UI
         super(Dashboard, self).__init__()
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -110,8 +97,7 @@ class Dashboard(QGraphicsView):
         def buildPolygonItem(origin: QPointF, polygon: List[QPointF]):
             return self.scene.addPolygon(
                 QPolygonF([QPointF(p.x() + origin.x(), p.y() + origin.y()) for p in polygon]),
-                inactivePen,
-                inactiveBrush)
+                inactivePen)
         def makeNumberItems(origin: QPointF, polygon: Dict[str, List[QPointF]]):
             return {k: buildPolygonItem(origin, p) for k, p in polygon.items()}
         # Add background
@@ -127,10 +113,10 @@ class Dashboard(QGraphicsView):
         self.scene.addItem(self.backgroundItem)
         # Add tachometer graphics
         self.tachometerEngineItems = \
-            {k: self.scene.addPolygon(p, inactivePen, inactiveBrush)
+            {k: self.scene.addPolygon(p, inactivePen)
              for k, p in PolygonsMapping.TACHOMETER_ENGINE.items()}
         self.tachometerGearboxItems = \
-            {k: self.scene.addPolygon(p, inactivePen, inactiveBrush)
+            {k: self.scene.addPolygon(p, inactivePen)
              for k, p in PolygonsMapping.TACHOMETER_GEARBOX.items()}
         # Add accelerometer graphics
         def makeEllipse(points: Tuple[QPointF, QPointF]):
@@ -139,14 +125,14 @@ class Dashboard(QGraphicsView):
                 points[0].y(),
                 points[1].x() - points[0].x(),
                 points[1].y() - points[0].y(),
-                inactivePen, inactiveBrush)
+                inactivePen)
         self.accelerometerCenterItem = makeEllipse(PolygonsMapping.ACCELEROMETER["C"])
         self.accelerometerSectorItem = makeEllipse( PolygonsMapping.ACCELEROMETER["S"])
         self.accelerometerSectorItem.setStartAngle(int((270 - (self.ACCELEROMETER_MIN_ANGEL / 2))) * 16)
         self.accelerometerSectorItem.setSpanAngle(self.ACCELEROMETER_MIN_ANGEL * 16)
         # Add steering wheel encoder graphics
         self.steeringWheelEncoderItems = \
-            {k: self.scene.addPolygon(p, inactivePen, inactiveBrush)
+            {k: self.scene.addPolygon(p, inactivePen)
              for k, p in PolygonsMapping.STEERING_WHEEL_ENCODER.items()}
         # Add turn indicator graphics
         def makeTurnIndicatorItem(initCoordinates: Dict[str, Any]):
@@ -202,10 +188,10 @@ class Dashboard(QGraphicsView):
         self.watterOdometer0100Items = makeNumberItems(PolygonsMapping.ODOMETER[100], PolygonsMapping.STANDARD_NUMBERS)
         self.watterOdometer1000Items = makeNumberItems(PolygonsMapping.ODOMETER[1000], PolygonsMapping.STANDARD_NUMBERS)
         # Initial rendering
-#        self.renderBackground()
-        self.renderTachometerEngine(
+        self.renderBackground()
+        self.renderTachometer(
             self.tachometerEngineItems, self.tachometerEngineValueRpm, self.tachometerEngineValueLevel)
-        self.renderTachometerEngine(
+        self.renderTachometer(
             self.tachometerGearboxItems, self.tachometerGearboxValueRpm, self.tachometerGearboxValueLevel)
         self.renderAccelerometer()
         self.renderSteeringWheelEncoder()
@@ -215,15 +201,17 @@ class Dashboard(QGraphicsView):
         self.renderGearNumber()
         self.renderSpeedometer()
         self.renderStopwatch()
-
-        # TODO Add more
+        self.renderOilManometer()
+        self.renderOilThermometer()
+        self.renderWatterThermometer()
+        self.renderOdometer()
 
     # Helpers
 
     def renderNumberHelper(self, number: int, items: Dict[str, QStandardItem], level: DashboardLevel):
         def setLevel(p: QStandardItem, l: DashboardLevel):
             p.setPen(self.pens[l])
-            p.setBrush(self.brushes[l])
+            #p.setBrush(self.brushes[l])
         if level != DashboardLevel.inactive:
             for s in PolygonsMapping.NUMBER_TO_SEGMENTS[number][0]:
                 setLevel(items[s], level)
@@ -233,29 +221,39 @@ class Dashboard(QGraphicsView):
             for _, p in items.items():
                 setLevel(p, DashboardLevel.inactive)
 
+    def renderTripleNumberHelper(self,
+                                 value: int, items001: Dict[str, QStandardItem], items010: Dict[str, QStandardItem],
+                                 items100: Dict[str, QStandardItem], level: DashboardLevel):
+        v001 = value % 10
+        v010 = (value % 100) // 10
+        v100 = value // 100
+        self.renderNumberHelper(v001, items001, level)
+        self.renderNumberHelper(v010, items010, level if v010 > 0 or v100 > 0 else DashboardLevel.inactive)
+        self.renderNumberHelper(v100, items100, level if v100 > 0 else DashboardLevel.inactive)
+
     # Rendering
 
     def renderBackground(self):
         logging.debug(f"[Dashboard.renderBackground] For mode = {self.mode}")
         self.backgroundItem.setPixmap(self.backgroundPixmaps[self.mode])
 
-    def renderTachometerEngine(self, items: Dict[int, QStandardItem], rpm: int, level: DashboardLevel):
+    def renderTachometer(self, items: Dict[int, QStandardItem], rpm: int, level: DashboardLevel):
         segment = round(rpm / self.TACHOMETER_SCALING)
         for k, p in items.items():
             if k <= segment:
                 p.setPen(self.pens[level])
-                p.setBrush(self.brushes[level])
+                #p.setBrush(self.brushes[level])
             else:
                 p.setPen(self.pens[DashboardLevel.inactive])
-                p.setBrush(self.brushes[DashboardLevel.inactive])
+                #p.setBrush(self.brushes[DashboardLevel.inactive])
 
     def renderAccelerometer(self):
         newPen = self.pens[self.accelerometerLevel]
         newBrush = self.brushes[self.accelerometerLevel]
         self.accelerometerCenterItem.setPen(newPen)
-        self.accelerometerCenterItem.setBrush(newBrush)
+        #self.accelerometerCenterItem.setBrush(newBrush)
         self.accelerometerSectorItem.setPen(newPen)
-        self.accelerometerSectorItem.setBrush(newBrush)
+        #self.accelerometerSectorItem.setBrush(newBrush)
         span = ((self.ACCELEROMETER_MAX_ANGEL - self.ACCELEROMETER_MIN_ANGEL) * self.accelerometerValue)\
             + self.ACCELEROMETER_MIN_ANGEL
         startAngel = self.accelerometerAngel - (span / 2)
@@ -268,10 +266,10 @@ class Dashboard(QGraphicsView):
         for k, p in self.steeringWheelEncoderItems.items():
             if (angel == 0 and k == 0) or (abs(k) <= abs(angel) and k != 0 and (k * angel) > 0):
                 p.setPen(self.pens[self.steeringWheelEncoderLevel])
-                p.setBrush(self.brushes[self.steeringWheelEncoderLevel])
+                #p.setBrush(self.brushes[self.steeringWheelEncoderLevel])
             else:
                 p.setPen(self.pens[DashboardLevel.inactive])
-                p.setBrush(self.brushes[DashboardLevel.inactive])
+                #p.setBrush(self.brushes[DashboardLevel.inactive])
 
     def renderTurnIndicator(self):
         newLPen = self.pens[DashboardLevel.inactive]
@@ -286,9 +284,9 @@ class Dashboard(QGraphicsView):
                 newRPen = self.pens[self.turnIndicatorLevel]
                 newRBrush = self.brushes[self.turnIndicatorLevel]
         self.turnIndicatorLeftItem.setPen(newLPen)
-        self.turnIndicatorLeftItem.setBrush(newLBrush)
+        #self.turnIndicatorLeftItem.setBrush(newLBrush)
         self.turnIndicatorRightItem.setPen(newRPen)
-        self.turnIndicatorRightItem.setBrush(newRBrush)
+        #self.turnIndicatorRightItem.setBrush(newRBrush)
         if self.turnIndicatorState != TurnIndication.none:
             self.turnIndicatorIsOn = not self.turnIndicatorIsOn
             self.turnIndicatorTimer.start(self.TURN_INDICATOR_FLASH_TIMEOUT)
@@ -299,34 +297,27 @@ class Dashboard(QGraphicsView):
     def renderOilWarningIndicator(self):
         for p in self.oilWarningIndicatorItems:
             p.setPen(self.pens[self.oilWarningIndicatorLevel])
-            p.setBrush(self.brushes[self.oilWarningIndicatorLevel])
+            #p.setBrush(self.brushes[self.oilWarningIndicatorLevel])
 
     def renderWatterWarningIndicator(self):
         for p in self.watterWarningIndicatorItems:
             p.setPen(self.pens[self.watterWarningIndicatorLevel])
-            p.setBrush(self.brushes[self.watterWarningIndicatorLevel])
+            #p.setBrush(self.brushes[self.watterWarningIndicatorLevel])
 
     def renderGearNumber(self):
         for s in PolygonsMapping.GEAR_NUMBER["M"][self.gearNumberValue][0]:
             segment = self.gearNumberItems[s]
             segment.setPen(self.pens[self.gearNumberLevel])
-            segment.setBrush(self.brushes[self.gearNumberLevel])
+            #segment.setBrush(self.brushes[self.gearNumberLevel])
         for s in PolygonsMapping.GEAR_NUMBER["M"][self.gearNumberValue][1]:
             segment = self.gearNumberItems[s]
             segment.setPen(self.pens[DashboardLevel.inactive])
-            segment.setBrush(self.brushes[DashboardLevel.inactive])
+            #segment.setBrush(self.brushes[DashboardLevel.inactive])
 
     def renderSpeedometer(self):
-        value100 = self.speedometerValue // 100
-        value010 = (self.speedometerValue % 100) // 10
-        value001 = (self.speedometerValue % 100) % 10
-        level = self.speedometerLevel
-        self.renderNumberHelper(
-            value100, self.speedometer100Items, level if value100 > 0 else DashboardLevel.inactive)
-        self.renderNumberHelper(
-            value010, self.speedometer010Items, level if value010 > 0 or value100 > 0 else DashboardLevel.inactive)
-        self.renderNumberHelper(
-            value001, self.speedometer001Items, level)
+        self.renderTripleNumberHelper(self.speedometerValue,
+                                      self.speedometer001Items, self.speedometer010Items,self.speedometer100Items,
+                                      self.speedometerLevel)
 
     def renderStopwatch(self):
         self.renderNumberHelper(self.stopwatchMills % 10, self.stopwatchMS01Items, self.stopwatchLevel)
@@ -337,14 +328,35 @@ class Dashboard(QGraphicsView):
         self.renderNumberHelper(self.stopwatchMinutes // 10, self.stopwatchM10Items, self.stopwatchLevel)
         self.renderNumberHelper(self.stopwatchHours, self.stopwatchH01Items, self.stopwatchLevel)
 
+    def renderOilManometer(self):
+        v001 = self.oilManometerValue % 10
+        v010 = (self.oilManometerValue % 100) // 10
+        v100 = self.oilManometerValue // 100
+        self.renderNumberHelper(v001, self.oilManometer0d01Items, self.oilManometerLevel)
+        self.renderNumberHelper(v010, self.oilManometer0d10Items, self.oilManometerLevel)
+        self.renderNumberHelper(v100, self.oilManometer1d00Items, self.oilManometerLevel)
 
+    def renderOilThermometer(self):
+        self.renderTripleNumberHelper(self.oilThermometerValue,
+                                      self.oilThermometer001Items, self.oilThermometer010Items,
+                                      self.oilThermometer100Items, self.oilThermometerLevel)
 
+    def renderWatterThermometer(self):
+        self.renderTripleNumberHelper(self.watterThermometerValue,
+                                     self.watterThermometer001Items, self.watterThermometer010Items,
+                                     self.watterThermometer100Items, self.watterThermometerLevel)
 
-
-
-
-    # TODO Add more
-
+    def renderOdometer(self):
+        v0001 = (self.odometerValue % 10)
+        v0010 = (self.odometerValue % 100) // 10
+        v0100 = (self.odometerValue % 1000) // 100
+        v1000 = self.odometerValue // 1000
+        def level(isActive: bool):
+             return self.odometerLevel if isActive > 0 else DashboardLevel.inactive
+        self.renderNumberHelper(v0001, self.watterOdometer0001Items, self.odometerLevel)
+        self.renderNumberHelper(v0010, self.watterOdometer0010Items, level(v0010 > 0 or v0100 > 0 or v1000 > 0))
+        self.renderNumberHelper(v0100, self.watterOdometer0100Items, level(v0100 > 0 or v1000 > 0))
+        self.renderNumberHelper(v1000, self.watterOdometer1000Items, level(v1000 > 0))
 
     # Methods
 
@@ -361,7 +373,7 @@ class Dashboard(QGraphicsView):
         self.tachometerEngineValueRpm = 0 if rpm < 0 else (9000 if rpm > 9000 else rpm)
         self.tachometerEngineValueLevel = level
         # Redraw UI
-        self.renderTachometerEngine(
+        self.renderTachometer(
             self.tachometerEngineItems, self.tachometerEngineValueRpm, self.tachometerEngineValueLevel)
 
     def setGearboxEngine(self, rpm: int, level: DashboardLevel):
@@ -370,7 +382,7 @@ class Dashboard(QGraphicsView):
         self.tachometerGearboxValueRpm = 0 if rpm < 0 else (9000 if rpm > 9000 else rpm)
         self.tachometerGearboxValueLevel = level
         # Redraw UI
-        self.renderTachometerEngine(
+        self.renderTachometer(
             self.tachometerGearboxItems, self.tachometerGearboxValueRpm, self.tachometerGearboxValueLevel)
 
     def setAccelerometer(self, angel: int, value: float, level: DashboardLevel):
@@ -411,16 +423,42 @@ class Dashboard(QGraphicsView):
             f"[Dashboard.setStopwatch] New mills = {mills}, seconds = {seconds}, minutes = {minutes}, "
             f"hours = {hours}, level = {level}")
         # Store new state
-        self.stopwatchMills = 0 if mills < 0 else (99 if mills > 99 else mills)  # 0 - 99
-        self.stopwatchSeconds = 0 if seconds < 0 else (59 if seconds > 59 else seconds)  # 0 - 59
-        self.stopwatchMinutes = 0 if minutes < 0 else (59 if minutes > 59 else minutes)  # 0 - 59
-        self.stopwatchHours = 0 if hours < 0 else (9 if hours > 9 else hours)  # 0 - 9
+        self.stopwatchMills = 0 if mills < 0 else (99 if mills > 99 else mills)
+        self.stopwatchSeconds = 0 if seconds < 0 else (59 if seconds > 59 else seconds)
+        self.stopwatchMinutes = 0 if minutes < 0 else (59 if minutes > 59 else minutes)
+        self.stopwatchHours = 0 if hours < 0 else (9 if hours > 9 else hours)
         self.stopwatchLevel = level
         # Redraw UI
         self.renderStopwatch()
 
+    def setOilManometer(self, value: float, level: DashboardLevel):
+        logging.debug(f"[Dashboard.setOilManometer] New value = {value}, level = {level}")
+        # Store new state
+        self.oilManometerValue = 0.0 if value < 0.0 else (9.99 if value > 9.99 else value)
+        self.oilManometerLevel = level
+        # Redraw UI
+        self.renderOilManometer()
 
+    def setOilThermometer(self, value: int, level: DashboardLevel):
+        logging.debug(f"[Dashboard.setOilThermometer] New value = {value}, level = {level}")
+        # Store new state
+        self.oilThermometerValue = 0 if value < 0 else (999 if value > 999 else value)
+        self.oilThermometerLevel = level
+        # Redraw UI
+        self.renderOilThermometer()
 
+    def setWatterThermometer(self, value: int, level: DashboardLevel):
+        logging.debug(f"[Dashboard.setWatterThermometer] New value = {value}, level = {level}")
+        # Store new state
+        self.watterThermometerValue = 0 if value < 0 else (999 if value > 999 else value)
+        self.watterThermometerLevel = level
+        # Redraw UI
+        self.renderWatterThermometer()
 
-
-    # TODO Add more
+    def setOdometer(self, value: int, level: DashboardLevel):
+        logging.debug(f"[Dashboard.setOdometer] New value = {value}, level = {level}")
+        # Store new state
+        self.odometerValue = 0 if value < 0 else (9999 if value > 9999 else value)
+        self.odometerLevel = level
+        # Redraw UI
+        self.renderOdometer()
