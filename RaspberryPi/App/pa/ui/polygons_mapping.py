@@ -149,23 +149,28 @@ class PolygonsMapping(object):
         "OIL": {
             "C": QPointF(283, 438),
             "P": [
-                [QPointF(2, 27), QPointF(18, 18), QPointF(18, 27), QPointF(5, 34)],
-                [QPointF(19, 2), QPointF(48, 2), QPointF(69, 27), QPointF(47, 15), QPointF(41, 22), QPointF(18, 22)],
-                [QPointF(23, 27), QPointF(37, 29), QPointF(22, 29)],
-                [QPointF(69, 27), QPointF(71, 24), QPointF(73, 25)],
+                [
+                    QPointF(0, 26), QPointF(17, 15), QPointF(17, 0), QPointF(49, 0), QPointF(69, 23),
+                    QPointF(72, 22), QPointF(74, 25), QPointF(71, 30), QPointF(68, 30), QPointF(48, 18),
+                    QPointF(41, 25), QPointF(37, 25), QPointF(37, 27), QPointF(38, 28), QPointF(38, 29),
+                    QPointF(37, 31), QPointF(22, 31), QPointF(22, 27), QPointF(4, 37), QPointF(0, 30),
+                    QPointF(0,27), QPointF(5, 29), QPointF(6, 32), QPointF(16, 26), QPointF(16, 22),
+                    QPointF(22, 19), QPointF(42, 19), QPointF(46, 12), QPointF(57, 17), QPointF(48, 5),
+                    QPointF(21, 5), QPointF(20, 18), QPointF(5, 28)],
                 [QPointF(76, 18), QPointF(74, 13), QPointF(75, 10), QPointF(78, 14)]]},
         "WATTER": {
             "C": QPointF(139, 367),
             "P": [
-                [QPointF(13, 1), QPointF(41, 1)],
-                [QPointF(0, 12), QPointF(18, 12)],
-                [QPointF(36, 12), QPointF(53, 12)],
-                [QPointF(24, 14), QPointF(23, 8), QPointF(31, 8), QPointF(31, 15)],
-                [QPointF(26, 15), QPointF(29, 15), QPointF(29, 46), QPointF(26, 46)],
-                [QPointF(28, 23), QPointF(35, 23)],
-                [QPointF(28, 30), QPointF(35, 30)],
-                [QPointF(28, 37), QPointF(35, 37)],
-                [QPointF(28, 44), QPointF(35, 44)]]}}
+                [QPointF(13, 0), QPointF(41, 0), QPointF(41, 2), QPointF(13, 2)],
+                [QPointF(0, 11), QPointF(18, 11), QPointF(18, 13), QPointF(0, 13)],
+                [QPointF(36, 11), QPointF(53, 11), QPointF(53, 13), QPointF(36, 13)],
+                [
+                    QPointF(22, 9), QPointF(26, 6), QPointF(28, 6), QPointF(32, 9), QPointF(32, 14), QPointF(29, 16),
+                    QPointF(29, 22), QPointF(35, 22), QPointF(35, 24), QPointF(29, 24), QPointF(29, 29),
+                    QPointF(35, 29), QPointF(35, 31), QPointF(29, 31), QPointF(29, 36), QPointF(35, 36),
+                    QPointF(35, 38), QPointF(29, 38), QPointF(29, 43), QPointF(35, 43), QPointF(35, 45),
+                    QPointF(29, 45), QPointF(29, 47), QPointF(28, 48), QPointF(26, 48), QPointF(25, 47),
+                    QPointF(25, 16), QPointF(22, 14)]]}}
 
     SPEED_NUMBERS = {
         "A": [QPointF(11, 142), QPointF(22, 137), QPointF(59, 136), QPointF(63, 152), QPointF(18, 152),  QPointF(11, 146)],
@@ -210,7 +215,7 @@ class PolygonsMapping(object):
              "M": [QPointF(43, 43), QPointF(66, 11), QPointF(73, 11), QPointF(73, 20), QPointF(56, 43)],
              "J": [QPointF(15, 89), QPointF(15, 81), QPointF(33, 57), QPointF(47, 57), QPointF(23, 89)]},
         "M": {
-            0: [["B", "C", "E", "F", "M", "J"], ["A", "D"]],
+            0: [["B", "C", "E", "F", "M", "J"], ["A", "D", "G"]],
             1: [["B", "C"], ["A", "D", "E", "F", "G", "M", "J", "M", "J"]],
             2: [["A", "B", "G", "E", "D"], ["C", "F", "M", "J"]],
             3: [["A", "B", "G", "C", "D"], ["E", "F", "M", "J"]],

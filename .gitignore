@@ -1,2 +1,6 @@
 RaspberryPi/App/.idea
 RaspberryPi/App/venv
+RaspberryPi/App/pa/__pycache__
+RaspberryPi/App/pa/model/__pycache__
+RaspberryPi/App/pa/test/__pycache__
+RaspberryPi/App/pa/ui/__pycache__

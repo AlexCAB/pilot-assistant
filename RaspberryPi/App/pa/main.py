@@ -1,19 +1,25 @@
-import configparser as cp
+from configparser import ConfigParser
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import QTimer
 from ui.dashboard import Dashboard
 from ui.tuning import Tuning
+from logic import Logic
 from model.enums import DashboardMode
+from model.enums import *
 import logging
+
+
+
 
 
 def main():
     print("######### Test GUI app")
 
     # Read config
-    config = cp.ConfigParser()
+    config = ConfigParser()
     config.read("app.ini", encoding="UTF-8")
 
-    logging.basicConfig(level=logging.DEBUG)
+    logging.basicConfig(level=logging.INFO)
 
     mode = DashboardMode[config.get(section="DASHBOARD", option="InitMode")]
 
@@ -21,10 +27,29 @@ def main():
 
     dashboard = Dashboard(mode)
 
-    if config.getboolean(section="DASHBOARD", option="FullScreen"):
-        dashboard.showFullScreen()
-    else:
-        dashboard.show()
+    logic = Logic(config, dashboard)
+
+    timer = QTimer()
+    timer.timeout.connect(logic.tick)
+    timer.start(2)
+
+
+
+
+
+
+    # testLevel = DashboardLevel.inactive
+    #
+    #
+    # def tick():
+    #     print("Tick")
+    #     if testLevel == DashboardLevel.ok:
+    #         testLevel = DashboardLevel.warning
+
+
+
+
+
 
     if config.getboolean(section="MAIN", option="ShowTuningUi"):
         tuning = Tuning(
