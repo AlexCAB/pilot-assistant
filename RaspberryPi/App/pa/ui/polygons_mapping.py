@@ -111,6 +111,80 @@ class PolygonsMapping(object):
         86: QPolygonF([QPointF(746, 401), QPointF(746, 357), QPointF(799, 357), QPointF(799, 401)])
     }
 
+    TACHOMETER_GEARS = {
+        "A": QPolygonF([
+            QPointF(-34, 0), QPointF(-5, 14), QPointF(5, 14), QPointF(34, 0), QPointF(5, -14), QPointF(-5, -14)]),
+        "N": {
+            "O": QPointF(-6, -11),
+            "P": {
+                1: QPolygonF([
+                    QPointF(0, 0), QPointF(13, 0), QPointF(13, 9), QPointF(10, 9), QPointF(10, 3),
+                    QPointF(8, 3), QPointF(8, 21), QPointF(0, 21), QPointF(0, 18), QPointF(5, 18),
+                    QPointF(5, 3), QPointF(0, 3)]),
+                2: QPolygonF([
+                    QPointF(0, 0), QPointF(14, 0), QPointF(14, 3), QPointF(3, 3),
+                    QPointF(3, 9), QPointF(14, 9), QPointF(14, 21), QPointF(0, 21),
+                    QPointF(0, 18), QPointF(11, 18), QPointF(11, 12), QPointF(0, 12)]),
+                3: QPolygonF([
+                    QPointF(0, 0), QPointF(13, 0), QPointF(13, 21), QPointF(0, 21),
+                    QPointF(0, 18), QPointF(10, 18), QPointF(10, 12), QPointF(2, 12),
+                    QPointF(2, 9), QPointF(10, 9), QPointF(10, 3), QPointF(0, 3)]),
+                4: QPolygonF([
+                    QPointF(7, 0), QPointF(10, 0), QPointF(10, 7), QPointF(11, 7),
+                    QPointF(11, 9), QPointF(10, 9), QPointF(10, 18), QPointF(7, 18),
+                    QPointF(7, 10), QPointF(3, 10), QPointF(3, 21), QPointF(0, 21),
+                    QPointF(0, 7), QPointF(7, 7)]),
+                5: QPolygonF([
+                    QPointF(0, 1), QPointF(3, 0), QPointF(13, 0), QPointF(13, 12),
+                    QPointF(5, 12), QPointF(5, 18), QPointF(13, 18), QPointF(13, 21),
+                    QPointF(2, 21), QPointF(2, 9), QPointF(10, 9), QPointF(10, 3),
+                    QPointF(3, 3), QPointF(2, 4), QPointF(0, 4)])}},
+        "T": {
+            0: (QPointF(121, 16), 0),
+            2: (QPointF(129, 51), -5),
+            4: (QPointF(135, 68), -6),
+            6: (QPointF(140, 85), -7),
+            8: (QPointF(146, 102), -8),
+            10: (QPointF(154, 120), -10),
+            12: (QPointF(160, 138), -15),
+            14: (QPointF(166, 153), -19),
+            16: (QPointF(175, 170), -23),
+            18: (QPointF(183, 187), -27),
+            20: (QPointF(194, 205), -29),
+            22: (QPointF(203, 220), -33),
+            24: (QPointF(215, 237), -37),
+            26: (QPointF(226, 250), -40),
+            28: (QPointF(238, 263), -44),
+            30: (QPointF(252, 277), -47),
+            32: (QPointF(266, 289), -50),
+            34: (QPointF(280, 300), -53),
+            36: (QPointF(295, 311), -56),
+            38: (QPointF(311, 321), -59),
+            40: (QPointF(328, 330), -61),
+            42: (QPointF(345, 339), -63),
+            44: (QPointF(361, 346), -65),
+            46: (QPointF(378, 354), -68),
+            48: (QPointF(395, 361), -70),
+            50: (QPointF(414, 366), -72),
+            52: (QPointF(432, 372), -74),
+            54: (QPointF(449, 376), -76),
+            56: (QPointF(467, 380), -78),
+            58: (QPointF(484, 384), -80),
+            60: (QPointF(504, 388), -81),
+            62: (QPointF(524, 390), -82),
+            64: (QPointF(541, 393), -83),
+            66: (QPointF(559, 395), -83),
+            68: (QPointF(577, 397), -85),
+            70: (QPointF(598, 398), -85),
+            72: (QPointF(616, 400), -86),
+            74: (QPointF(634, 400), -87),
+            76: (QPointF(653, 401), -88),
+            78: (QPointF(672, 402), -88),
+            80: (QPointF(690, 403), -89),
+            82: (QPointF(709, 403), -90),
+            84: (QPointF(728, 404), -90),
+            86: (QPointF(778, 405), -90)}}
+
     ACCELEROMETER = {
         "C": (QPointF(629, 158), QPointF(678, 206)),
         "S": (QPointF(527, 56), QPointF(778, 306))

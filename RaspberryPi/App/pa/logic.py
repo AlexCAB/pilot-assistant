@@ -30,10 +30,15 @@ class Logic:
 
         self.dashboard = dashboard
 
-        self.testLevel = DashboardLevel.inactive
+        self.testLevel = DashboardLevel.ok
 
         self.tachometerEngineValueRpm = 0  # 0 - 9000
         self.tachometerGearboxValueRpm = 0  # 0 - 9000
+        self.tachometerGear1Rpm = 0  # 0 - 9000
+        self.tachometerGear2Rpm = 0  # 0 - 9000
+        self.tachometerGear3Rpm = 0  # 0 - 9000
+        self.tachometerGear4Rpm = 0  # 0 - 9000
+        self.tachometerGear5Rpm = 0  # 0 - 9000
         self.accelerometerAngel = 0  # -180 - +180
         self.accelerometerValue = 0.0  # 0.0 - 1.0
         self.steeringWheelEncoderAngel = 0  # -7 - +7
@@ -61,18 +66,46 @@ class Logic:
 
         try:
 
+            #
+            # if self.testLevel == DashboardLevel.ok:
+            #     self.testLevel = DashboardLevel.warning
+            # elif self.testLevel == DashboardLevel.warning:
+            #     self.testLevel = DashboardLevel.dangerous
+            # else:
+            #     self.testLevel = DashboardLevel.ok
 
-            if self.testLevel == DashboardLevel.ok:
-                self.testLevel = DashboardLevel.warning
-            elif self.testLevel == DashboardLevel.warning:
-                self.testLevel = DashboardLevel.dangerous
-            else:
-                self.testLevel = DashboardLevel.ok
-
-            self.tachometerEngineValueRpm += 200
+            self.tachometerEngineValueRpm += 10
             if self.tachometerEngineValueRpm > 9000: self.tachometerEngineValueRpm = 0  # 0 - 9000
-            self.tachometerGearboxValueRpm += 200
+            self.tachometerGearboxValueRpm += 20
             if self.tachometerGearboxValueRpm > 9000: self.tachometerGearboxValueRpm = 0  # 0 - 9000
+
+            self.tachometerGear1Rpm += 10  # 0 - 9000
+            if self.tachometerGear1Rpm > 9000: self.tachometerGear1Rpm = 0  # 0 - 9000
+
+            self.tachometerGear2Rpm += 20  # 0 - 9000
+            if self.tachometerGear2Rpm > 9000: self.tachometerGear2Rpm = 0  # 0 - 9000
+
+            self.tachometerGear3Rpm += 30  # 0 - 9000
+            if self.tachometerGear3Rpm > 9000: self.tachometerGear3Rpm = 0  # 0 - 9000
+
+            self.tachometerGear4Rpm += 40  # 0 - 9000
+            if self.tachometerGear4Rpm > 9000: self.tachometerGear4Rpm = 0  # 0 - 9000
+
+            self.tachometerGear5Rpm += 50  # 0 - 9000
+            if self.tachometerGear5Rpm > 9000: self.tachometerGear5Rpm = 0  # 0 - 9000
+
+
+
+
+
+
+
+
+
+
+
+
+
             self.accelerometerAngel += 10
             if self.accelerometerAngel > 180: self.accelerometerAngel = -180  # -180 - +180
             self.accelerometerValue += 0.1
@@ -107,9 +140,14 @@ class Logic:
             if self.watterThermometerValue > 999: self.watterThermometerValue = 0  # 0 - 999
             self.odometerValue += 1
             if self.odometerValue > 9999: self.odometerValue = 0  # 0 - 9999
-
             self.dashboard.setTachometerEngine(self.tachometerEngineValueRpm, self.testLevel)
             self.dashboard.setTachometerGearbox(self.tachometerGearboxValueRpm, self.testLevel)
+            self.dashboard.setTachometerGears(
+                self.tachometerGear1Rpm,
+                self.tachometerGear2Rpm,
+                self.tachometerGear3Rpm,
+                self.tachometerGear4Rpm,
+                self.tachometerGear5Rpm)
             self.dashboard.setAccelerometer(self.accelerometerAngel, self.accelerometerValue, self.testLevel)
             self.dashboard.setSteeringWheelEncoder(self.steeringWheelEncoderAngel, self.testLevel)
             self.dashboard.setTurnIndicator(self.turnIndicatorState, self.testLevel)
