@@ -18,8 +18,10 @@ created: 2019-12-4
 """
 
 import logging
-from ui.dashboard import Dashboard
 from configparser import ConfigParser
+from com.cabin import CabinCom
+from com.engine import EngineCom
+from ui.dashboard import Dashboard
 from model.enums import *
 import traceback
 
@@ -28,7 +30,16 @@ class Logic:
 
     # Constructor
 
-    def __init__(self, config: ConfigParser, dashboard: Dashboard):
+    def __init__(self, config: ConfigParser, engineCom: EngineCom, cabinCom: CabinCom, dashboard: Dashboard) -> None:
+        # Init
+        self.engineCom = engineCom
+        self.cabinCom = cabinCom
+        self.dashboard = dashboard
+
+
+
+
+
 
         if config.getboolean(section="DASHBOARD", option="FullScreen"):
             dashboard.showFullScreen()
@@ -68,7 +79,12 @@ class Logic:
 
     # Methods
 
-    def tick(self):
+    def tick(self) -> None:
+
+
+
+
+
         logging.debug(f"[Logic.tick] Start update")
 
         try:

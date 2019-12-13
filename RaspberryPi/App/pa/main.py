@@ -3,8 +3,9 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5.QtCore import QTimer
 from ui.dashboard import Dashboard
 from ui.tuning import Tuning
+from com.cabin import CabinCom
+from com.engine import EngineCom
 from logic import Logic
-from model.enums import DashboardMode
 from model.enums import *
 import logging
 
@@ -25,9 +26,12 @@ def main():
 
     app = QApplication([])
 
+    engineCom = EngineCom()
+    cabinCom = CabinCom()
+
     dashboard = Dashboard(mode)
 
-    logic = Logic(config, dashboard)
+    logic = Logic(config, engineCom, cabinCom, dashboard)
 
     timer = QTimer()
     timer.timeout.connect(logic.tick)
