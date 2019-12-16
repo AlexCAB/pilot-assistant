@@ -20,7 +20,7 @@ created: 2019-11-11
 from enum import Enum
 
 
-class DashboardMode(Enum):
+class DriveMode(Enum):
     race = 1
     street = 2
 

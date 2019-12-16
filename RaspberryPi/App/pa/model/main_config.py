@@ -14,48 +14,27 @@ __/_/     /_/  /_/  \____/\__/      /_/  |_/____/ /____/ /_/  /____/ \__/ \__,_/
 
 author: CAB
 website: github.com/alexcab
-created: 2019-11-9
+created: 2019-12-16
 """
 
-import sys
-import os
-import logging
-from PyQt5.QtWidgets import QMainWindow, QPushButton, QHBoxLayout, QWidget
-from PyQt5.QtCore import Qt, QMargins
-from PyQt5.QtGui import QPainter, QPixmap
+from configparser import ConfigParser
+from dataclasses import dataclass
 from model.enums import DriveMode
-from typing import Callable
 
 
-class Tuning(QMainWindow):
+@dataclass
+class MainConfig:
 
-    # Parameters
-
-    WINDOW_WIDTH = 800
-    WINDOW_HEIGHT = 600
+    # UI
+    initDriveMode: DriveMode
+    dashboardFullScreen: bool
+    showTuningUi: bool
 
     # Constructor
 
-    def __init__(self):
+    def __init__(self, config: ConfigParser) -> None:
         # Init
-        super(Tuning, self).__init__()
-        # Init UI
-        self.setGeometry(100, 700, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
-        self.setWindowTitle("PA Tuning")
-        # Buttons
-        self.raceModeButton = QPushButton('Race mode')
-        # self.raceModeButton.clicked.connect(onRaceMode)
-        self.streetModeButton = QPushButton('Street mode')
-        # self.streetModeButton.clicked.connect(onStreetMode)
-        # Layout
-        widget = QWidget()
-        hBox = QHBoxLayout()
-        hBox.setAlignment(Qt.AlignTop)
-        hBox.addWidget(self.raceModeButton)
-        hBox.addWidget(self.streetModeButton)
-        widget.setLayout(hBox)
-        self.setCentralWidget(widget)
-
-
-    # Methods
+        self.initDriveMode       = DriveMode[config.get("MAIN", "InitDriveMode")]
+        self.dashboardFullScreen = config.getboolean("MAIN", "DashboardFullScreen")
+        self.showTuningUi        = config.getboolean("MAIN", "ShowTuningUi")
 

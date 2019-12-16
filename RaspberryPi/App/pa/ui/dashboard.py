@@ -46,7 +46,7 @@ class Dashboard(QGraphicsView):
 
     # Constructor
 
-    def __init__(self, initMode: DashboardMode) -> None:
+    def __init__(self, initMode: DriveMode) -> None:
         # Init values
         self.mode = initMode
         self.tachometerEngineRpm = 0  # 0 - 9000
@@ -124,9 +124,9 @@ class Dashboard(QGraphicsView):
             return {k: buildPolygonItem(origin, p) for k, p in polygon.items()}
         # Add background
         self.backgroundPixmaps = {
-            DashboardMode.race: QPixmap(os.path.join(dirPath, "background_race.png"))
+            DriveMode.race: QPixmap(os.path.join(dirPath, "background_race.png"))
                 .scaled(self.WINDOW_WIDTH, self.WINDOW_HEIGHT),
-            DashboardMode.street: QPixmap(os.path.join(dirPath, "background_street.png"))
+            DriveMode.street: QPixmap(os.path.join(dirPath, "background_street.png"))
                 .scaled(self.WINDOW_WIDTH, self.WINDOW_HEIGHT)}
         logging.debug(
             f"[Dashboard.__init__] Loaded: backgroundPixmaps = {self.backgroundPixmaps}, initMode = {initMode}")
@@ -445,7 +445,7 @@ class Dashboard(QGraphicsView):
 
     # Methods
 
-    def setMode(self, mode: DashboardMode) -> None:
+    def setMode(self, mode: DriveMode) -> None:
         logging.debug(f"[Dashboard.setMode] New mode = {mode}")
         # Store new state
         self.mode = mode
