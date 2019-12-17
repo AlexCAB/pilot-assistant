@@ -21,7 +21,7 @@ import sys
 import os
 import logging
 from PyQt5.QtWidgets import QMainWindow, QPushButton, QHBoxLayout, QWidget
-from PyQt5.QtCore import Qt, QMargins
+from PyQt5.QtCore import Qt, QMargins, QCoreApplication
 from PyQt5.QtGui import QPainter, QPixmap
 from model.enums import DriveMode
 from typing import Callable
@@ -36,9 +36,10 @@ class Tuning(QMainWindow):
 
     # Constructor
 
-    def __init__(self):
+    def __init__(self, onExit: Callable[[], None]):
         # Init
         super(Tuning, self).__init__()
+        self.onExit = onExit
         # Init UI
         self.setGeometry(100, 700, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
         self.setWindowTitle("PA Tuning")
@@ -56,6 +57,11 @@ class Tuning(QMainWindow):
         widget.setLayout(hBox)
         self.setCentralWidget(widget)
 
+    # Override methods
+
+    def closeEvent(self, event):
+        logging.debug(f"[Tuning.closeEvent] Window close, terminate app")
+        self.onExit()
 
     # Methods
 

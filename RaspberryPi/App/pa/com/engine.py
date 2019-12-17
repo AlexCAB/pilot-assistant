@@ -17,13 +17,33 @@ website: github.com/alexcab
 created: 2019-12-12
 """
 
+import logging
+import time
 
-class EngineCom:
+from PyQt5.QtCore import QRunnable, pyqtSlot, QObject, pyqtSignal, QThread, QMutex
+
+from Worker import Worker
+
+
+class EngineComSignals(QObject):
+    outEngineRpm         = pyqtSignal(float)
+    outGearboxInRpm      = pyqtSignal(float)
+    outGearboxOutRpm     = pyqtSignal(float)
+    outGearNumber        = pyqtSignal(int)
+    outOilPressure       = pyqtSignal(float)
+    outOilTemperature    = pyqtSignal(float)
+    outWatterTemperature = pyqtSignal(float)
+        
+
+class EngineCom(QObject):
 
     # Constructor
 
     def __init__(self) -> None:
         # Init
+        super(EngineCom, self).__init__()
+        self.signals = EngineComSignals()
+        self.worker = Worker()
         self.engineRpm = 0.0
         self.gearboxInRpm = 0.0
         self.gearboxOutRpm = 0.0
@@ -31,6 +51,16 @@ class EngineCom:
         self.oilPressure = 0.0
         self.oilTemperature = 0.0
         self.watterTemperature = 0.0
+
+    #
+    # # Worker
+    #
+    # @pyqtSlot()
+    # def run(self) -> None:
+    #     logging.debug(f"[CabinCom.run] Start processing")
+    #     while self.doWork:
+    #         print("RRRRRRRRRRRRRRRRRRRRR1")
+
 
     # Methods
 
@@ -75,3 +105,10 @@ class EngineCom:
         # TODO Get real value
 
         return self.watterTemperature
+
+   # Input
+
+    @pyqtSlot()
+    def inStop(self) -> None:
+        logging.debug(f"[CabinCom.inStop] Stop processing")
+        self.worker.stop()

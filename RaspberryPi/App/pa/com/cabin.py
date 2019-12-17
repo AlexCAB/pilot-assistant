@@ -17,13 +17,33 @@ website: github.com/alexcab
 created: 2019-12-13
 """
 
+import logging
+import time
 
-class CabinCom:
+from PyQt5.QtCore import QRunnable, pyqtSlot, QObject, pyqtSignal, QThread
+
+from Worker import Worker
+
+
+class CabinComSignals(QObject):
+    outRaceModeIsOn          = pyqtSignal(bool)
+    outStopwatchButtonIsOn   = pyqtSignal(bool)
+    outOdometerButtonIsOn    = pyqtSignal(bool)
+    outTurnLeftSignalIsOn    = pyqtSignal(bool)
+    outTurnRightSignalIsOn   = pyqtSignal(bool)
+    outSteeringWhilePosition = pyqtSignal(int)
+    outAccelerometer         = pyqtSignal(float, float, float)
+
+
+class CabinCom(QObject):
 
     # Constructor
 
     def __init__(self) -> None:
         # Init
+        super(CabinCom, self).__init__()
+        self.signals = CabinComSignals()
+        self.worker = Worker()
         self.raceModeIsOn = False
         self.stopwatchButtonIsOn = False
         self.odometerButtonIsOn = False
@@ -33,6 +53,15 @@ class CabinCom:
         self.accelerometerX = 0.0
         self.accelerometerY = 0.0
         self.accelerometerZ = 0.0
+
+
+    # # Worker
+    #
+    # @pyqtSlot()
+    # def run(self) -> None:
+    #     logging.debug(f"[CabinCom.run] Start processing")
+    #     while self.doWork:
+    #         print("RRRRRRRRRRRRRRRRRRRRR2")
 
     # Methods
 
@@ -77,3 +106,10 @@ class CabinCom:
         # TODO Get real value
 
         return self.accelerometerX, self.accelerometerY, self.accelerometerZ
+
+    # Input
+
+    @pyqtSlot()
+    def inStop(self) -> None:
+        logging.debug(f"[CabinCom.inStop] Stop processing")
+        self.worker.stop()

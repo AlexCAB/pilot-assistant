@@ -20,11 +20,12 @@ created: 2019-11-9
 import os
 import logging
 from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QOpenGLWidget
-from PyQt5.QtCore import Qt, QPointF, QTimer, QRectF
+from PyQt5.QtCore import Qt, QPointF, QTimer, QRectF, pyqtSlot, QObject
 from PyQt5.QtGui import QPixmap, QPen, QBrush, QStandardItem, QPolygonF, QColor, QSurfaceFormat, QTransform
 from model.enums import *
 from .polygons_mapping import PolygonsMapping
 from typing import Dict, Tuple, Any, List
+import traceback
 
 
 class Dashboard(QGraphicsView):
@@ -54,10 +55,10 @@ class Dashboard(QGraphicsView):
         self.tachometerGearboxRpm = 0  # 0 - 9000
         self.tachometerGearboxLevel = DashboardLevel.inactive
         self.tachometerGear1Rpm = 0  # 0 - 9000
-        self.tachometerGear2Rpm = 1000  # 0 - 9000
-        self.tachometerGear3Rpm = 2000  # 0 - 9000
-        self.tachometerGear4Rpm = 3000  # 0 - 9000
-        self.tachometerGear5Rpm = 9000  # 0 - 9000
+        self.tachometerGear2Rpm = 0  # 0 - 9000
+        self.tachometerGear3Rpm = 0  # 0 - 9000
+        self.tachometerGear4Rpm = 0  # 0 - 9000
+        self.tachometerGear5Rpm = 0  # 0 - 9000
         self.accelerometerAngel = 0  # -180 - +180
         self.accelerometerValue = 0.0  # 0.0 - 1.0
         self.accelerometerLevel = DashboardLevel.inactive
@@ -445,15 +446,17 @@ class Dashboard(QGraphicsView):
 
     # Methods
 
-    def setMode(self, mode: DriveMode) -> None:
-        logging.debug(f"[Dashboard.setMode] New mode = {mode}")
+    @pyqtSlot(DriveMode)
+    def inMode(self, mode: DriveMode) -> None:
+        logging.debug(f"[Dashboard.inMode] New mode = {mode}")
         # Store new state
         self.mode = mode
         # Redraw UI
         self.renderBackground()
 
-    def setTachometerEngine(self, rpm: int, level: DashboardLevel) -> None:
-        logging.debug(f"[Dashboard.setTachometerEngine] New rpm = {rpm}, level = {level}")
+    @pyqtSlot(int, DashboardLevel)
+    def inTachometerEngine(self, rpm: int, level: DashboardLevel) -> None:
+        logging.debug(f"[Dashboard.inTachometerEngine] New rpm = {rpm}, level = {level}")
         # Store new state
         self.tachometerEngineRpm = 0 if rpm < 0 else (9000 if rpm > 9000 else rpm)
         self.tachometerEngineLevel = level
@@ -461,8 +464,9 @@ class Dashboard(QGraphicsView):
         self.renderTachometerScale(
             self.tachometerEngineItems, self.tachometerEngineRpm, self.tachometerEngineLevel)
 
-    def setTachometerGearbox(self, rpm: int, level: DashboardLevel) -> None:
-        logging.debug(f"[Dashboard.setTachometerGearbox] New rpm = {rpm}, level = {level}")
+    @pyqtSlot(int, DashboardLevel)
+    def inTachometerGearbox(self, rpm: int, level: DashboardLevel) -> None:
+        logging.debug(f"[Dashboard.inTachometerGearbox] New rpm = {rpm}, level = {level}")
         # Store new state
         self.tachometerGearboxRpm = 0 if rpm < 0 else (9000 if rpm > 9000 else rpm)
         self.tachometerGearboxLevel = level
@@ -470,9 +474,10 @@ class Dashboard(QGraphicsView):
         self.renderTachometerScale(
             self.tachometerGearboxItems, self.tachometerGearboxRpm, self.tachometerGearboxLevel)
 
-    def setTachometerGears(self, rpm1: int, rpm2: int, rpm3: int, rpm4: int, rpm5: int) -> None:
+    @pyqtSlot(int, int, int, int, int)
+    def inTachometerGears(self, rpm1: int, rpm2: int, rpm3: int, rpm4: int, rpm5: int) -> None:
             logging.debug(
-                f"[Dashboard.setTachometerGears] New rpm1 = {rpm1}, rpm2 = {rpm2}, rpm3 = {rpm3}, "
+                f"[Dashboard.inTachometerGears] New rpm1 = {rpm1}, rpm2 = {rpm2}, rpm3 = {rpm3}, "
                 f"rpm4 = {rpm4}, rpm5 = {rpm5}")
             # Store new state
             self.tachometerGear1Rpm = 0 if rpm1 < 0 else (9000 if rpm1 > 9000 else rpm1)
@@ -487,8 +492,9 @@ class Dashboard(QGraphicsView):
             self.renderTachometerGear(4, self.tachometerGear4Rpm)
             self.renderTachometerGear(5, self.tachometerGear5Rpm)
 
-    def setAccelerometer(self, angel: int, value: float, level: DashboardLevel) -> None:
-        logging.debug(f"[Dashboard.setAccelerometer] New angel = {angel}, value = {value}, level = {level}")
+    @pyqtSlot(int, float, DashboardLevel)
+    def inAccelerometer(self, angel: int, value: float, level: DashboardLevel) -> None:
+        logging.debug(f"[Dashboard.inAccelerometer] New angel = {angel}, value = {value}, level = {level}")
         # Store new state
         self.accelerometerAngel = -180 if angel < -180 else (180 if angel > 180 else angel)
         self.accelerometerValue = 0.0 if value < 0.0 else (1.0 if value > 1.0 else value)
@@ -496,55 +502,62 @@ class Dashboard(QGraphicsView):
         # Redraw UI
         self.renderAccelerometer()
 
-    def setSteeringWheelEncoder(self, angel: int, level: DashboardLevel) -> None:
-        logging.debug(f"[Dashboard.setSteeringWheelEncoder] New angel = {angel}, level = {level}")
+    @pyqtSlot(int, DashboardLevel)
+    def inSteeringWheelEncoder(self, angel: int, level: DashboardLevel) -> None:
+        logging.debug(f"[Dashboard.inSteeringWheelEncoder] New angel = {angel}, level = {level}")
         # Store new state
         self.steeringWheelEncoderAngel = -7 if angel < -7 else (7 if angel > 7 else angel)
         self.steeringWheelEncoderLevel = level
         # Redraw UI
         self.renderSteeringWheelEncoder()
 
-    def setTurnIndicator(self, state: TurnIndication, level: DashboardLevel) -> None:
-        logging.debug(f"[Dashboard.setTurnIndicator] New state = {state}, level = {level}")
+    @pyqtSlot(TurnIndication, DashboardLevel)
+    def inTurnIndicator(self, state: TurnIndication, level: DashboardLevel) -> None:
+        logging.debug(f"[Dashboard.inTurnIndicator] New state = {state}, level = {level}")
         # Store new state
         self.turnIndicatorState = state
         self.turnIndicatorLevel = level
         # Redraw UI
         self.renderTurnIndicator()
 
-    def setGearNumber(self, value: int, level: DashboardLevel) -> None:
-        logging.debug(f"[Dashboard.setGearNumber] New value = {value}, level = {level}")
+    @pyqtSlot(int, DashboardLevel)
+    def inGearNumber(self, value: int, level: DashboardLevel) -> None:
+        logging.debug(f"[Dashboard.inGearNumber] New value = {value}, level = {level}")
         # Store new state
         self.gearNumberValue = 0 if value < 0 else (5 if value > 5 else value)
         self.gearNumberLevel = level
         # Redraw UI
         self.renderGearNumber()
 
-    def setOilWarningIndicator(self, level: DashboardLevel) -> None:
-        logging.debug(f"[Dashboard.setOilWarningIndicator] New level = {level}")
+    @pyqtSlot(DashboardLevel)
+    def inOilWarningIndicator(self, level: DashboardLevel) -> None:
+        logging.debug(f"[Dashboard.inOilWarningIndicator] New level = {level}")
         # Store new state
         self.oilWarningIndicatorLevel = level
         # Redraw UI
         self.renderOilWarningIndicator()
 
-    def setWatterWarningIndicator(self, level: DashboardLevel) -> None:
-        logging.debug(f"[Dashboard.setWatterWarningIndicator] New level = {level}")
+    @pyqtSlot(DashboardLevel)
+    def inWatterWarningIndicator(self, level: DashboardLevel) -> None:
+        logging.debug(f"[Dashboard.inWatterWarningIndicator] New level = {level}")
         # Store new state
         self.watterWarningIndicatorLevel = level
         # Redraw UI
         self.renderWatterWarningIndicator()
 
-    def setSpeedometer(self, value: int, level: DashboardLevel) -> None:
-        logging.debug(f"[Dashboard.setSpeedometer] New value = {value}, level = {level}")
+    @pyqtSlot(int, DashboardLevel)
+    def inSpeedometer(self, value: int, level: DashboardLevel) -> None:
+        logging.debug(f"[Dashboard.inSpeedometer] New value = {value}, level = {level}")
         # Store new state
         self.speedometerValue = 0 if value < 0 else (999 if value > 999 else value)
         self.speedometerLevel = level
         # Redraw UI
         self.renderSpeedometer()
 
-    def setStopwatch(self, mills: int, seconds: int, minutes: int, hours: int, level: DashboardLevel) -> None:
+    @pyqtSlot(int, int, int, int, DashboardLevel)
+    def inStopwatch(self, mills: int, seconds: int, minutes: int, hours: int, level: DashboardLevel) -> None:
         logging.debug(
-            f"[Dashboard.setStopwatch] New mills = {mills}, seconds = {seconds}, minutes = {minutes}, "
+            f"[Dashboard.inStopwatch] New mills = {mills}, seconds = {seconds}, minutes = {minutes}, "
             f"hours = {hours}, level = {level}")
         # Store new state
         self.stopwatchMills = 0 if mills < 0 else (99 if mills > 99 else mills)
@@ -555,34 +568,40 @@ class Dashboard(QGraphicsView):
         # Redraw UI
         self.renderStopwatch()
 
-    def setOilManometer(self, value: float, level: DashboardLevel) -> None:
-        logging.debug(f"[Dashboard.setOilManometer] New value = {value}, level = {level}")
+    @pyqtSlot(float, DashboardLevel)
+    def inOilManometer(self, value: float, level: DashboardLevel) -> None:
+        logging.debug(f"[Dashboard.inOilManometer] New value = {value}, level = {level}")
         # Store new state
         self.oilManometerValue = 0.0 if value < 0.0 else (9.99 if value > 9.99 else value)
         self.oilManometerLevel = level
         # Redraw UI
         self.renderOilManometer()
 
-    def setOilThermometer(self, value: int, level: DashboardLevel) -> None:
-        logging.debug(f"[Dashboard.setOilThermometer] New value = {value}, level = {level}")
+    @pyqtSlot(int, DashboardLevel)
+    def inOilThermometer(self, value: int, level: DashboardLevel) -> None:
+        logging.debug(f"[Dashboard.inOilThermometer] New value = {value}, level = {level}")
         # Store new state
         self.oilThermometerValue = 0 if value < 0 else (999 if value > 999 else value)
         self.oilThermometerLevel = level
         # Redraw UI
         self.renderOilThermometer()
 
-    def setWatterThermometer(self, value: int, level: DashboardLevel) -> None:
-        logging.debug(f"[Dashboard.setWatterThermometer] New value = {value}, level = {level}")
+    @pyqtSlot(int, DashboardLevel)
+    def inWatterThermometer(self, value: int, level: DashboardLevel) -> None:
+        logging.debug(f"[Dashboard.inWatterThermometer] New value = {value}, level = {level}")
         # Store new state
         self.watterThermometerValue = 0 if value < 0 else (999 if value > 999 else value)
         self.watterThermometerLevel = level
         # Redraw UI
         self.renderWatterThermometer()
 
-    def setOdometer(self, value: int, level: DashboardLevel) -> None:
-        logging.debug(f"[Dashboard.setOdometer] New value = {value}, level = {level}")
+    @pyqtSlot(int, DashboardLevel)
+    def inOdometer(self, value: int, level: DashboardLevel) -> None:
+        logging.debug(f"[Dashboard.inOdometer] New value = {value}, level = {level}")
         # Store new state
         self.odometerValue = 0 if value < 0 else (9999 if value > 9999 else value)
         self.odometerLevel = level
         # Redraw UI
         self.renderOdometer()
+
+
