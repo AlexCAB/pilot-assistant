@@ -22,7 +22,7 @@ import time
 
 from PyQt5.QtCore import QRunnable, pyqtSlot, QObject, pyqtSignal, QThread
 
-from Worker import Worker
+from worker import Worker
 
 
 class CabinComSignals(QObject):
@@ -43,7 +43,7 @@ class CabinCom(QObject):
         # Init
         super(CabinCom, self).__init__()
         self.signals = CabinComSignals()
-        self.worker = Worker()
+        self.worker = Worker(timeout=0.1, job=self.job)
         self.raceModeIsOn = False
         self.stopwatchButtonIsOn = False
         self.odometerButtonIsOn = False
@@ -54,14 +54,10 @@ class CabinCom(QObject):
         self.accelerometerY = 0.0
         self.accelerometerZ = 0.0
 
+    # Worker job
 
-    # # Worker
-    #
-    # @pyqtSlot()
-    # def run(self) -> None:
-    #     logging.debug(f"[CabinCom.run] Start processing")
-    #     while self.doWork:
-    #         print("RRRRRRRRRRRRRRRRRRRRR2")
+    def job(self) -> None:
+        logging.debug(f"[CabinCom.job] Start processing")
 
     # Methods
 
@@ -106,10 +102,3 @@ class CabinCom(QObject):
         # TODO Get real value
 
         return self.accelerometerX, self.accelerometerY, self.accelerometerZ
-
-    # Input
-
-    @pyqtSlot()
-    def inStop(self) -> None:
-        logging.debug(f"[CabinCom.inStop] Stop processing")
-        self.worker.stop()

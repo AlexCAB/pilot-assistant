@@ -31,6 +31,8 @@ from com.engine import EngineCom
 from logic import Logic
 import logging
 
+from worker_manager import WorkerManager
+
 
 def main():
     # Logging
@@ -43,12 +45,12 @@ def main():
     logicConfig = LogicConfig(config)
     # Create components
     app = QApplication([])
-    threadPool = QThreadPool()
     engineCom = EngineCom()
     cabinCom = CabinCom()
     dashboard = Dashboard(mainConfig.initDriveMode)
     logic = Logic(logicConfig, mainConfig.initDriveMode)
-    tuning = Tuning(onExit=lambda: app.quit())
+    workerManager = WorkerManager([engineCom.worker, cabinCom.worker, logic.worker])
+    tuning = Tuning(onExit=lambda: (workerManager.stopAll(), app.quit()))
     # Connect components
     engineCom.signals.outEngineRpm.connect(logic.inEngineRpm)
     engineCom.signals.outGearboxInRpm.connect(logic.inGearboxInRpm)
@@ -80,9 +82,6 @@ def main():
     logic.signals.outOilThermometer.connect(dashboard.inOilThermometer)
     logic.signals.outWatterThermometer.connect(dashboard.inWatterThermometer)
     logic.signals.outOdometer.connect(dashboard.inOdometer)
-    app.aboutToQuit.connect(logic.inStop)
-    app.aboutToQuit.connect(cabinCom.inStop)
-    app.aboutToQuit.connect(engineCom.inStop)
     # Show UI
     if mainConfig.dashboardFullScreen:
         dashboard.showFullScreen()
@@ -91,9 +90,7 @@ def main():
     if mainConfig.showTuningUi:
         tuning.show()
     # Run processing
-    threadPool.start(logic.worker)
-    threadPool.start(cabinCom.worker)
-    threadPool.start(engineCom.worker)
+    workerManager.startAll()
     # Start events loop
     sys.exit(app.exec_())
 

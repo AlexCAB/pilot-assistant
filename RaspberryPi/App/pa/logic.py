@@ -22,7 +22,7 @@ import time
 
 from PyQt5.QtCore import QRunnable, pyqtSlot, QObject, pyqtSignal, QThread
 
-from Worker import Worker
+from worker import Worker
 from com.cabin import CabinCom
 from com.engine import EngineCom
 from model.logic_config import LogicConfig
@@ -50,12 +50,6 @@ class LogicSignals(QObject):
     outOdometer               = pyqtSignal(int, DashboardLevel)  # (value, level)
 
 
-
-
-
-
-
-
 class Logic(QObject):
 
     # Constructor
@@ -64,7 +58,7 @@ class Logic(QObject):
         # Init
         super(Logic, self).__init__()
         self.signals = LogicSignals()
-        self.worker = Worker()
+        self.worker = Worker(timeout=0.1, job=self.job)
 
 
 
@@ -102,20 +96,10 @@ class Logic(QObject):
         # self.watterThermometerValue = 0  # 0 - 999
         # self.odometerValue = 0  # 0 - 9999
 
+    # Worker job
 
-
-
-
-
-    # # Worker
-    #
-    # @pyqtSlot()
-    # def run(self) -> None:
-    #     logging.debug(f"[Logic.run] Start processing")
-    #     # while self.doWork:
-    #     #     print("RRRRRRRRRRRRRRRRRRRRR3")
-
-
+    def job(self) -> None:
+        logging.debug(f"[Logic.job] Start processing")
 
     # Input
 
@@ -174,12 +158,6 @@ class Logic(QObject):
     @pyqtSlot(float, float, float)
     def inAccelerometer(self, x: float, y: float, z: float) -> None:
         logging.debug(f"[Logic.inAccelerometer] New x = ${x}, y = ${y}, z = ${z}")
-
-    @pyqtSlot()
-    def inStop(self) -> None:
-        logging.debug(f"[CabinCom.inStop] Stop processing")
-        self.worker.stop()
-
 
 
 

@@ -22,7 +22,7 @@ import time
 
 from PyQt5.QtCore import QRunnable, pyqtSlot, QObject, pyqtSignal, QThread, QMutex
 
-from Worker import Worker
+from worker import Worker
 
 
 class EngineComSignals(QObject):
@@ -43,7 +43,7 @@ class EngineCom(QObject):
         # Init
         super(EngineCom, self).__init__()
         self.signals = EngineComSignals()
-        self.worker = Worker()
+        self.worker = Worker(timeout=0.1, job=self.job)
         self.engineRpm = 0.0
         self.gearboxInRpm = 0.0
         self.gearboxOutRpm = 0.0
@@ -52,15 +52,10 @@ class EngineCom(QObject):
         self.oilTemperature = 0.0
         self.watterTemperature = 0.0
 
-    #
-    # # Worker
-    #
-    # @pyqtSlot()
-    # def run(self) -> None:
-    #     logging.debug(f"[CabinCom.run] Start processing")
-    #     while self.doWork:
-    #         print("RRRRRRRRRRRRRRRRRRRRR1")
+    # Worker job
 
+    def job(self) -> None:
+        logging.debug(f"[EngineCom.job] Start processing")
 
     # Methods
 
@@ -105,10 +100,3 @@ class EngineCom(QObject):
         # TODO Get real value
 
         return self.watterTemperature
-
-   # Input
-
-    @pyqtSlot()
-    def inStop(self) -> None:
-        logging.debug(f"[CabinCom.inStop] Stop processing")
-        self.worker.stop()

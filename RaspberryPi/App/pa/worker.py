@@ -19,6 +19,8 @@ created: 2019-12-13
 
 import logging
 import time
+import traceback
+from typing import Callable
 
 from PyQt5.QtCore import QRunnable, pyqtSlot
 
@@ -27,20 +29,27 @@ class Worker(QRunnable):
 
     # Constructor
 
-    def __init__(self) -> None:
+    def __init__(self, timeout: float, job:  Callable[[], None]) -> None:
         # Init
         super(Worker, self).__init__()
+        self.timeout = timeout
+        self.job = job
         self.doWork = True
 
-    # Methods
+    # Run job
 
     @pyqtSlot()
     def run(self) -> None:
-        logging.debug(f"[Logic.run] Start processing")
+        logging.debug(f"[Worker.run] Start processing")
         while self.doWork:
-            time.sleep(1)
-            print("T")
-        print("RRRRRRRRRRRRRRRRRRRRR3")
+            logging.debug(f"[Worker.run] Run job, timeout = {self.timeout}")
+            try:
+                self.job()
+            except:
+                traceback.print_exc()
+            time.sleep(self.timeout)
+
+    # Methods
 
     def stop(self) -> None:
         logging.debug(f"[Worker.stop] Stop processing")
