@@ -26,13 +26,13 @@ from worker import Worker
 
 
 class EngineComSignals(QObject):
-    outEngineRpm         = pyqtSignal(float)
-    outGearboxInRpm      = pyqtSignal(float)
-    outGearboxOutRpm     = pyqtSignal(float)
-    outGearNumber        = pyqtSignal(int)
-    outOilPressure       = pyqtSignal(float)
-    outOilTemperature    = pyqtSignal(float)
-    outWatterTemperature = pyqtSignal(float)
+    outEngineTachometer     = pyqtSignal(float, int)
+    outGearboxInTachometer  = pyqtSignal(float, int)
+    outGearboxOutTachometer = pyqtSignal(float, int)
+    outGearNumber           = pyqtSignal(int)
+    outOilPressure          = pyqtSignal(float)
+    outOilTemperature       = pyqtSignal(float)
+    outWatterTemperature    = pyqtSignal(float)
         
 
 class EngineCom(QObject):
@@ -44,18 +44,64 @@ class EngineCom(QObject):
         super(EngineCom, self).__init__()
         self.signals = EngineComSignals()
         self.worker = Worker(timeout=0.1, job=self.job)
-        self.engineRpm = 0.0
-        self.gearboxInRpm = 0.0
-        self.gearboxOutRpm = 0.0
+        self.engineCount = 0
+        self.gearboxInCount = 0
+        self.gearboxOutCount = 0
         self.gearNumber = 0  # 0 - 5
         self.oilPressure = 0.0
         self.oilTemperature = 0.0
         self.watterTemperature = 0.0
 
+        self.timer = 0
+
     # Worker job
 
     def job(self) -> None:
-        logging.debug(f"[EngineCom.job] Start processing")
+        logging.debug(f"[EngineCom.job] Tick # {self.timer}")
+
+        if self.timer % 2 == 0:
+            self.engineCount += 50
+            if self.engineCount > 9000:
+                self.engineCount = 0
+            self.signals.outEngineTachometer.emit(1.0, self.engineCount)
+
+        if self.timer % 2 == 0:
+            self.gearboxInCount += 100
+            if self.gearboxInCount > 9000:
+                self.gearboxInCount = 0
+            self.signals.outGearboxInTachometer.emit(1.0, self.gearboxInCount)
+
+        if self.timer % 2 == 0:
+            self.gearboxOutCount += 50
+            if self.gearboxOutCount > 9000:
+                self.gearboxOutCount = 0
+            self.signals.outGearboxOutTachometer.emit(1.0, self.gearboxOutCount)
+
+        if self.timer % 100 == 0:
+            self.gearNumber += 1  # 0 - 5
+            if self.gearNumber > 5:
+                self.gearNumber = 0
+            self.signals.outGearNumber.emit(self.gearNumber)
+
+        if self.timer % 2 == 0:
+            self.oilPressure += 0.01
+            if self.oilPressure > 1.0:
+                self.oilPressure = 0.0
+            self.signals.outOilPressure.emit(self.oilPressure)
+
+        if self.timer % 1 == 0:
+            self.oilTemperature += 1.0
+            if self.oilTemperature > 300.0:
+                self.oilTemperature = 0.0
+            self.signals.outOilTemperature.emit(self.oilTemperature)
+
+        if self.timer % 4 == 0:
+            self.watterTemperature += 1.0
+            if self.watterTemperature > 150.0:
+                self.watterTemperature = 0.0
+            self.signals.outWatterTemperature.emit(self.watterTemperature)
+
+        self.timer += 1
 
     # Methods
 

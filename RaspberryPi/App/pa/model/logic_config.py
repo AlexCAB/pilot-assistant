@@ -27,6 +27,7 @@ import json
 class LogicConfig:
 
     # Tachometer engine
+    tachometerEngineScale: float
     tachometerEngineRaceMinDangerous: int
     tachometerEngineRaceMinWarning: int
     tachometerEngineRaceMaxWarning: int
@@ -36,6 +37,7 @@ class LogicConfig:
     tachometerEngineStreetMaxWarning: int
     tachometerEngineStreetMaxDangerous: int
     # Tachometer gearbox
+    tachometerGearboxScale: float
     tachometerGearboxDeviationWarning: int
     tachometerGearboxDeviationDangerous: int
     # Tachometer gears
@@ -56,32 +58,39 @@ class LogicConfig:
     steeringWheelEncoderWarning: int
     steeringWheelEncoderDangerous: int
     # Speedometer
-    speedometerSpeedRatio: float
+    speedometerRpmScale: float
+    speedometerSpeedScale: float
     speedometerStreetMinDangerous: List[int]
     speedometerStreetMinWarning: List[int]
     speedometerStreetMaxWarning: List[int]
     speedometerStreetMaxDangerous: List[int]
     # Oil manometer
+    oilManometerScale: float
     oilManometerMinDangerous: float
     oilManometerMinWarning: float
     oilManometerMaxWarning: float
     oilManometerMaxDangerous: float
     # Oil thermometer
+    oilThermometerScale: float
     oilThermometerMinDangerous: float
     oilThermometerMinWarning: float
     oilThermometerMaxWarning: float
     oilThermometerMaxDangerous: float
     # Watter thermometer
+    watterThermometerScale: float
     watterThermometerMinDangerous: float
     watterThermometerMinWarning: float
     watterThermometerMaxWarning: float
     watterThermometerMaxDangerous: float
+    # Odometer
+    odometerDistanceScale: float
 
     # Constructor
 
     def __init__(self, config: ConfigParser) -> None:
         # Init
         te = "TACHOMETER_ENGINE"
+        self.tachometerEngineScale               = config.getfloat(te, "TachometerEngineScale")
         self.tachometerEngineRaceMinDangerous    = config.getint(te, "TachometerEngineRaceMinDangerous")
         self.tachometerEngineRaceMinWarning      = config.getint(te, "TachometerEngineRaceMinWarning")
         self.tachometerEngineRaceMaxWarning      = config.getint(te, "TachometerEngineRaceMaxWarning")
@@ -91,6 +100,7 @@ class LogicConfig:
         self.tachometerEngineStreetMaxWarning    = config.getint(te, "TachometerEngineStreetMaxWarning")
         self.tachometerEngineStreetMaxDangerous  = config.getint(te, "TachometerEngineStreetMaxDangerous")
         tgb = "TACHOMETER_GEARBOX"
+        self.tachometerGearboxScale              = config.getfloat(tgb, "TachometerGearboxScale")
         self.tachometerGearboxDeviationWarning   = config.getint(tgb, "TachometerGearboxDeviationWarning")
         self.tachometerGearboxDeviationDangerous = config.getint(tgb, "TachometerGearboxDeviationDangerous")
         tg = "TACHOMETER_GEARS"
@@ -111,23 +121,31 @@ class LogicConfig:
         self.steeringWheelEncoderWarning         = config.getint(swe, "SteeringWheelEncoderWarning")
         self.steeringWheelEncoderDangerous       = config.getint(swe, "SteeringWheelEncoderDangerous")
         s = "SPEEDOMETER"
-        self.speedometerSpeedRatio               = config.getfloat(s, "SpeedometerSpeedRatio")
+        self.speedometerRpmScale                 = config.getfloat(s, "SpeedometerRpmScale")
+        self.speedometerSpeedScale               = config.getfloat(s, "SpeedometerSpeedScale")
         self.speedometerStreetMinDangerous       = json.loads(config.get(s, "SpeedometerStreetMinDangerous"))
         self.speedometerStreetMinWarning         = json.loads(config.get(s, "SpeedometerStreetMinWarning"))
         self.speedometerStreetMaxWarning         = json.loads(config.get(s, "SpeedometerStreetMaxWarning"))
         self.speedometerStreetMaxDangerous       = json.loads(config.get(s, "SpeedometerStreetMaxDangerous"))
         om = "OIL_MANOMETER"
+        self.oilManometerScale                   = config.getfloat(om, "OilManometerScale")
         self.oilManometerMinDangerous            = config.getfloat(om, "OilManometerMinDangerous")
         self.oilManometerMinWarning              = config.getfloat(om, "OilManometerMinWarning")
         self.oilManometerMaxWarning              = config.getfloat(om, "OilManometerMaxWarning")
         self.oilManometerMaxDangerous            = config.getfloat(om, "OilManometerMaxDangerous")
         ot = "OIL_THERMOMETER"
-        self.oilThermometerMinDangerous          = config.getfloat(ot, "OilThermometerMinDangerous")
-        self.oilThermometerMinWarning            = config.getfloat(ot, "OilThermometerMinWarning")
-        self.oilThermometerMaxWarning            = config.getfloat(ot, "OilThermometerMaxWarning")
-        self.oilThermometerMaxDangerous          = config.getfloat(ot, "OilThermometerMaxDangerous")
+        self.oilThermometerScale                 = config.getfloat(ot, "OilThermometerScale")
+        self.oilThermometerMinDangerous          = config.getint(ot, "OilThermometerMinDangerous")
+        self.oilThermometerMinWarning            = config.getint(ot, "OilThermometerMinWarning")
+        self.oilThermometerMaxWarning            = config.getint(ot, "OilThermometerMaxWarning")
+        self.oilThermometerMaxDangerous          = config.getint(ot, "OilThermometerMaxDangerous")
         wt = "WATTER_THERMOMETER"
-        self.watterThermometerMinDangerous       = config.getfloat(wt, "WatterThermometerMinDangerous")
-        self.watterThermometerMinWarning         = config.getfloat(wt, "WatterThermometerMinWarning")
-        self.watterThermometerMaxWarning         = config.getfloat(wt, "WatterThermometerMaxWarning")
-        self.watterThermometerMaxDangerous       = config.getfloat(wt, "WatterThermometerMaxDangerous")
+        self.watterThermometerScale              = config.getfloat(wt, "WatterThermometerScale")
+        self.watterThermometerMinDangerous       = config.getint(wt, "WatterThermometerMinDangerous")
+        self.watterThermometerMinWarning         = config.getint(wt, "WatterThermometerMinWarning")
+        self.watterThermometerMaxWarning         = config.getint(wt, "WatterThermometerMaxWarning")
+        self.watterThermometerMaxDangerous       = config.getint(wt, "WatterThermometerMaxDangerous")
+        wt = "ODOMETER"
+        self.odometerDistanceScale = config.getfloat(wt, "OdometerDistanceScale")
+
+

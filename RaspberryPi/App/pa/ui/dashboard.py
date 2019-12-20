@@ -40,6 +40,7 @@ class Dashboard(QGraphicsView):
     DANGEROUS_COLOR = Qt.red
     TACHOMETER_GEARS_ARROW_COLOR = Qt.white
     TACHOMETER_GEARS_NUMBER_COLOR = Qt.black
+    GEAR_NUMBER_COLOR = Qt.white
     TACHOMETER_SCALING = 100
     ACCELEROMETER_MIN_ANGEL = 10
     ACCELEROMETER_MAX_ANGEL = 350
@@ -69,7 +70,6 @@ class Dashboard(QGraphicsView):
         self.oilWarningIndicatorLevel = DashboardLevel.inactive
         self.watterWarningIndicatorLevel = DashboardLevel.inactive
         self.gearNumberValue = 0  # 0 - 5
-        self.gearNumberLevel = DashboardLevel.inactive
         self.speedometerValue = 0  # 0 - 999
         self.speedometerLevel = DashboardLevel.inactive
         self.stopwatchMills = 0  # 0 - 99
@@ -147,6 +147,11 @@ class Dashboard(QGraphicsView):
         self.tachometerGearsBrushes = {
             "A": QBrush(self.TACHOMETER_GEARS_ARROW_COLOR, Qt.SolidPattern),
             "N": QBrush(self.TACHOMETER_GEARS_NUMBER_COLOR, Qt.SolidPattern)}
+
+
+
+
+
         def makeGearsTransforms(translate: QPointF, rotate: int):
             arrowTrans = QTransform()
             arrowTrans.translate(translate.x(), translate.y())
@@ -202,6 +207,8 @@ class Dashboard(QGraphicsView):
         self.oilWarningIndicatorItems = makeWarningIndicatorItems(PolygonsMapping.WARNING_INDICATORS["OIL"])
         self.watterWarningIndicatorItems = makeWarningIndicatorItems(PolygonsMapping.WARNING_INDICATORS["WATTER"])
         # Add gear number graphics
+        self.gearNumberPen = QPen(self.GEAR_NUMBER_COLOR, 1, Qt.SolidLine)
+        self.gearNumberBrush = QBrush(self.GEAR_NUMBER_COLOR, Qt.SolidPattern)
         self.gearNumberItems = makeNumberItems(PolygonsMapping.GEAR_NUMBER["C"], PolygonsMapping.GEAR_NUMBER["P"])
         # Add speedometer graphics
         self.speedometer001Items = makeNumberItems(PolygonsMapping.SPEEDOMETER[1], PolygonsMapping.SPEED_NUMBERS)
@@ -395,8 +402,8 @@ class Dashboard(QGraphicsView):
     def renderGearNumber(self) -> None:
         for s in PolygonsMapping.GEAR_NUMBER["M"][self.gearNumberValue][0]:
             segment = self.gearNumberItems[s]
-            segment.setPen(self.levelPens[self.gearNumberLevel])
-            segment.setBrush(self.levelBrushes[self.gearNumberLevel])
+            segment.setPen(self.gearNumberPen)
+            segment.setBrush(self.gearNumberBrush)
         for s in PolygonsMapping.GEAR_NUMBER["M"][self.gearNumberValue][1]:
             segment = self.gearNumberItems[s]
             segment.setPen(self.levelPens[DashboardLevel.inactive])
@@ -520,12 +527,11 @@ class Dashboard(QGraphicsView):
         # Redraw UI
         self.renderTurnIndicator()
 
-    @pyqtSlot(int, DashboardLevel)
-    def inGearNumber(self, value: int, level: DashboardLevel) -> None:
-        logging.debug(f"[Dashboard.inGearNumber] New value = {value}, level = {level}")
+    @pyqtSlot(int)
+    def inGearNumber(self, value: int) -> None:
+        logging.debug(f"[Dashboard.inGearNumber] New value = {value}")
         # Store new state
         self.gearNumberValue = 0 if value < 0 else (5 if value > 5 else value)
-        self.gearNumberLevel = level
         # Redraw UI
         self.renderGearNumber()
 

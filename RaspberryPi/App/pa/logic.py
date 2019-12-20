@@ -20,15 +20,11 @@ created: 2019-12-4
 import logging
 import time
 
-from PyQt5.QtCore import QRunnable, pyqtSlot, QObject, pyqtSignal, QThread
+from PyQt5.QtCore import  pyqtSlot, QObject, pyqtSignal
 
 from worker import Worker
-from com.cabin import CabinCom
-from com.engine import EngineCom
 from model.logic_config import LogicConfig
-from ui.dashboard import Dashboard
 from model.enums import *
-import traceback
 
 
 class LogicSignals(QObject):
@@ -39,7 +35,7 @@ class LogicSignals(QObject):
     outAccelerometer          = pyqtSignal(int, float, DashboardLevel)  # (angel, value, level)
     outSteeringWheelEncoder   = pyqtSignal(int, DashboardLevel)  # (angel, level)
     outTurnIndicator          = pyqtSignal(TurnIndication, DashboardLevel)  # (state, level)
-    outGearNumber             = pyqtSignal(int, DashboardLevel)  # (value, level)
+    outGearNumber             = pyqtSignal(int)  # (value, level)
     outOilWarningIndicator    = pyqtSignal(DashboardLevel)  # (level)
     outWatterWarningIndicator = pyqtSignal(DashboardLevel)  # (level)
     outSpeedometer            = pyqtSignal(int, DashboardLevel)  # (value, level)
@@ -57,44 +53,31 @@ class Logic(QObject):
     def __init__(self, config: LogicConfig, initMode: DriveMode) -> None:
         # Init
         super(Logic, self).__init__()
+        self.config = config
+        self.driveMode = initMode
         self.signals = LogicSignals()
         self.worker = Worker(timeout=0.1, job=self.job)
+        self.engineRpm = 0
+        self.oilPressureLevel = DashboardLevel.ok
+        self.oilTemperatureLevel = DashboardLevel.ok
+        self.oilWarningIndicator = DashboardLevel.inactive
+        self.watterWarningIndicator = DashboardLevel.inactive
+        self.distance = 0
+        self.odometerLevel = DashboardLevel.ok
 
 
 
+    # Helpers
 
-
-        #
-        # if config.getboolean(section="DASHBOARD", option="FullScreen"):
-        #     dashboard.showFullScreen()
-        # else:
-        #     dashboard.show()
-
-        # self.dashboard = dashboard
-        #
-        # self.testLevel = DashboardLevel.ok
-        #
-        # self.tachometerEngineValueRpm = 0  # 0 - 9000
-        # self.tachometerGearboxValueRpm = 0  # 0 - 9000
-        # self.tachometerGear1Rpm = 0  # 0 - 9000
-        # self.tachometerGear2Rpm = 0  # 0 - 9000
-        # self.tachometerGear3Rpm = 0  # 0 - 9000
-        # self.tachometerGear4Rpm = 0  # 0 - 9000
-        # self.tachometerGear5Rpm = 0  # 0 - 9000
-        # self.accelerometerAngel = 0  # -180 - +180
-        # self.accelerometerValue = 0.0  # 0.0 - 1.0
-        # self.steeringWheelEncoderAngel = 0  # -7 - +7
-        # self.turnIndicatorState = TurnIndication.none
-        # self.gearNumberValue = 0  # 0 - 5
-        # self.speedometerValue = 0  # 0 - 999
-        # self.stopwatchMills = 0  # 0 - 99
-        # self.stopwatchSeconds = 0  # 0 - 59
-        # self.stopwatchMinutes = 0  # 0 - 59
-        # self.stopwatchHours = 0  # 0 - 9
-        # self.oilManometerValue = 0.0  # 0.0 - 9.99
-        # self.oilThermometerValue = 0  # 0 - 999
-        # self.watterThermometerValue = 0  # 0 - 999
-        # self.odometerValue = 0  # 0 - 9999
+    def setOilWarningIndicator(self) -> None:
+        newLevel = DashboardLevel.inactive
+        if self.oilPressureLevel == DashboardLevel.dangerous or self.oilTemperatureLevel == DashboardLevel.dangerous:
+            newLevel = DashboardLevel.dangerous
+        elif self.oilPressureLevel == DashboardLevel.warning or self.oilTemperatureLevel == DashboardLevel.warning:
+            newLevel = DashboardLevel.warning
+        if self.oilWarningIndicator != newLevel:
+            self.signals.outOilWarningIndicator.emit(newLevel)
+            self.oilWarningIndicator = newLevel
 
     # Worker job
 
@@ -103,166 +86,167 @@ class Logic(QObject):
 
     # Input
 
-    @pyqtSlot(float)
-    def inEngineRpm(self, rpm: float) -> None:
-        logging.debug(f"[Logic.inEngineRpm] New rpm = ${rpm}")
+    @pyqtSlot(float, int)
+    def inEngineTachometer(self, period: float, count: int) -> None:
+        logging.debug(f"[Logic.inEngineTachometer] New period = ${period}, count = {count}")
+        self.engineRpm = int(period * count * self.config.tachometerEngineScale)
+        level = DashboardLevel.ok
+        if self.driveMode == DriveMode.race:
+            if self.engineRpm <= self.config.tachometerEngineRaceMinWarning \
+                    or self.engineRpm >= self.config.tachometerEngineRaceMaxWarning:
+                level = DashboardLevel.warning
+            if self.engineRpm <= self.config.tachometerEngineRaceMinDangerous \
+                    or self.engineRpm >= self.config.tachometerEngineRaceMaxDangerous:
+                level = DashboardLevel.dangerous
+        else:
+            if self.engineRpm <= self.config.tachometerEngineStreetMinWarning \
+                    or self.engineRpm >= self.config.tachometerEngineStreetMaxWarning:
+                level = DashboardLevel.warning
+            if self.engineRpm <= self.config.tachometerEngineStreetMinDangerous \
+                    or self.engineRpm >= self.config.tachometerEngineStreetMaxDangerous:
+                level = DashboardLevel.dangerous
+        self.signals.outTachometerEngine.emit(self.engineRpm, level)
 
-    @pyqtSlot(float)
-    def inGearboxInRpm(self, rpm: float) -> None:
-        logging.debug(f"[Logic.inGearboxInRpm] New rpm = ${rpm}")
+    @pyqtSlot(float, int)
+    def inGearboxInTachometer(self, period: float, count: int) -> None:
+        logging.debug(f"[Logic.inGearboxInTachometer] New period = ${period}, count = {count}")
+        gearboxInRpm = int(period * count * self.config.tachometerGearboxScale)
+        rpmDef = abs(self.engineRpm - gearboxInRpm)
+        level = DashboardLevel.ok
+        if rpmDef >= self.config.tachometerGearboxDeviationDangerous:
+            level = DashboardLevel.dangerous
+        elif rpmDef >= self.config.tachometerGearboxDeviationWarning:
+            level = DashboardLevel.warning
+        self.signals.outTachometerGearbox.emit(gearboxInRpm, level)
 
-    @pyqtSlot(float)
-    def inGearboxOutRpm(self, rpm: float) -> None:
-        logging.debug(f"[Logic.inGearboxOutRpm] New rpm = ${rpm}")
+    @pyqtSlot(float, int)
+    def inGearboxOutTachometer(self, period: float, count: int) -> None:
+        logging.debug(f"[Logic.inGearboxOutTachometer] New period = ${period}, count = {count}")
+        rpm = (period * count * self.config.speedometerRpmScale)
+        speed = int(rpm * self.config.speedometerSpeedScale)
+        level = DashboardLevel.ok
+        if self.driveMode == DriveMode.street:
+            level = DashboardLevel.dangerous
+            i = 0
+            while i < len(self.config.speedometerStreetMinWarning) and level == DashboardLevel.dangerous:
+                if self.config.speedometerStreetMinDangerous[i] <= speed \
+                        < self.config.speedometerStreetMinWarning[i] \
+                        or self.config.speedometerStreetMaxWarning[i] <= speed \
+                        < self.config.speedometerStreetMaxDangerous[i]:
+                    level = DashboardLevel.warning
+                elif self.config.speedometerStreetMinWarning[i] <= speed \
+                        < self.config.speedometerStreetMaxWarning[i]:
+                    level = DashboardLevel.ok
+                i += 1
+        self.signals.outSpeedometer.emit(speed, level)
+        self.signals.outTachometerGears.emit(
+            int(rpm / self.config.tachometerGear1Ratio),
+            int(rpm / self.config.tachometerGear2Ratio),
+            int(rpm / self.config.tachometerGear3Ratio),
+            int(rpm / self.config.tachometerGear4Ratio),
+            int(rpm / self.config.tachometerGear5Ratio))
+        if self.odometerLevel == DashboardLevel.ok:
+            self.distance += int(count * self.config.odometerDistanceScale)
+            if self.distance >= 9999 and self.driveMode == DriveMode.race:
+                self.odometerLevel = DashboardLevel.dangerous
+                self.distance = 9999
+            elif self.distance > 9999:
+                self.distance = 0
+            self.signals.outOdometer.emit(self.distance, self.odometerLevel)
 
     @pyqtSlot(int)
     def inGearNumber(self, number: int) -> None:
         logging.debug(f"[Logic.inGearNumber] New number = ${number}")
+        self.signals.outGearNumber.emit(number)
 
     @pyqtSlot(float)
     def inOilPressure(self, value: float) -> None:
         logging.debug(f"[Logic.inOilPressure] New value = ${value}")
+        pressure = int(value * self.config.oilManometerScale * 100) / 100
+        level = DashboardLevel.ok
+        if pressure <= self.config.oilManometerMinWarning or pressure >= self.config.oilManometerMaxWarning:
+            level = DashboardLevel.warning
+        if pressure <= self.config.oilManometerMinDangerous or pressure >= self.config.oilManometerMaxDangerous:
+            level = DashboardLevel.dangerous
+        self.signals.outOilManometer.emit(pressure, level)
+        self.oilPressureLevel = level
+        self.setOilWarningIndicator()
 
     @pyqtSlot(float)
     def inOilTemperature(self, value: float) -> None:
         logging.debug(f"[Logic.inOilTemperature] New value = ${value}")
+        temperature = int(value * self.config.oilThermometerScale)
+        level = DashboardLevel.ok
+        if temperature <= self.config.oilThermometerMinWarning \
+                or temperature >= self.config.oilThermometerMaxWarning:
+            level = DashboardLevel.warning
+        if temperature <= self.config.oilThermometerMinDangerous \
+                or temperature >= self.config.oilThermometerMaxDangerous:
+            level = DashboardLevel.dangerous
+        self.signals.outOilThermometer.emit(temperature, level)
+        self.oilTemperatureLevel = level
+        self.setOilWarningIndicator()
 
     @pyqtSlot(float)
     def inWatterTemperature(self, value: float) -> None:
         logging.debug(f"[Logic.inWatterTemperature] New value = ${value}")
+        temperature = int(value * self.config.watterThermometerScale)
+        level = DashboardLevel.ok
+        if temperature <= self.config.watterThermometerMinWarning \
+                or temperature >= self.config.watterThermometerMaxWarning:
+            level = DashboardLevel.warning
+        if temperature <= self.config.watterThermometerMinDangerous \
+                or temperature >= self.config.watterThermometerMaxDangerous:
+            level = DashboardLevel.dangerous
+        self.signals.outWatterThermometer.emit(temperature, level)
+        if self.watterWarningIndicator != level:
+            self.signals.outWatterWarningIndicator.emit(DashboardLevel.inactive if level == DashboardLevel.ok else level)
+            self.watterWarningIndicator = level
 
     @pyqtSlot(bool)
     def inRaceModeIsOn(self, isOn: bool) -> None:
         logging.debug(f"[Logic.inRaceModeIsOn] New isOn = ${isOn}")
+        self.driveMode = DriveMode.race if isOn else DriveMode.street
+        self.distance = 0
+        self.odometerLevel = DashboardLevel.ok
+        self.signals.outMode.emit(self.driveMode)
 
     @pyqtSlot(bool)
     def inStopwatchButtonIsOn(self, isOn: bool) -> None:
         logging.debug(f"[Logic.inStopwatchButtonIsOn] New isOn = ${isOn}")
 
+        # TODO
+
     @pyqtSlot(bool)
     def inOdometerButtonIsOn(self, isOn: bool) -> None:
         logging.debug(f"[Logic.inOdometerButtonIsOn] New isOn = ${isOn}")
+        if isOn:
+            self.odometerLevel = DashboardLevel.warning
+        else:
+            self.distance = 0
+            self.odometerLevel = DashboardLevel.ok
+        self.signals.outOdometer.emit(self.distance, self.odometerLevel)
 
     @pyqtSlot(bool)
     def inTurnLeftSignalIsOn(self, isOn: bool) -> None:
         logging.debug(f"[Logic.inTurnLeftSignalIsOn] New isOn = ${isOn}")
 
+        # TODO
+
     @pyqtSlot(bool)
     def inTurnRightSignalIsOn(self, isOn: bool) -> None:
         logging.debug(f"[Logic.inTurnRightSignalIsOn] New isOn = ${isOn}")
+
+        # TODO
 
     @pyqtSlot(int)
     def inSteeringWhilePosition(self, value: int) -> None:
         logging.debug(f"[Logic.inSteeringWhilePosition] New value = ${value}")
 
+        # TODO
+
     @pyqtSlot(float, float, float)
     def inAccelerometer(self, x: float, y: float, z: float) -> None:
         logging.debug(f"[Logic.inAccelerometer] New x = ${x}, y = ${y}, z = ${z}")
 
-
-
-
-
-
-
-
-
-            # self.signals.test.emit(1, "2")
-        #
-        # print("FFFFFFFFFFFFFFFF1")
-        #
-        # time.sleep(2)
-        # print("FFFFFFFFFFFFFFFF2")
-
-        # try:
-        #     pass
-        #
-        #     #
-        #     # if self.testLevel == DashboardLevel.ok:
-        #     #     self.testLevel = DashboardLevel.warning
-        #     # elif self.testLevel == DashboardLevel.warning:
-        #     #     self.testLevel = DashboardLevel.dangerous
-        #     # else:
-        #     #     self.testLevel = DashboardLevel.ok
-        #
-        #     # self.tachometerEngineValueRpm += 10
-        #     # if self.tachometerEngineValueRpm > 9000: self.tachometerEngineValueRpm = 0  # 0 - 9000
-        #     # self.tachometerGearboxValueRpm += 20
-        #     # if self.tachometerGearboxValueRpm > 9000: self.tachometerGearboxValueRpm = 0  # 0 - 9000
-        #     #
-        #     # self.tachometerGear1Rpm += 10  # 0 - 9000
-        #     # if self.tachometerGear1Rpm > 9000: self.tachometerGear1Rpm = 0  # 0 - 9000
-        #     #
-        #     # self.tachometerGear2Rpm += 20  # 0 - 9000
-        #     # if self.tachometerGear2Rpm > 9000: self.tachometerGear2Rpm = 0  # 0 - 9000
-        #     #
-        #     # self.tachometerGear3Rpm += 30  # 0 - 9000
-        #     # if self.tachometerGear3Rpm > 9000: self.tachometerGear3Rpm = 0  # 0 - 9000
-        #     #
-        #     # self.tachometerGear4Rpm += 40  # 0 - 9000
-        #     # if self.tachometerGear4Rpm > 9000: self.tachometerGear4Rpm = 0  # 0 - 9000
-        #     #
-        #     # self.tachometerGear5Rpm += 50  # 0 - 9000
-        #     # if self.tachometerGear5Rpm > 9000: self.tachometerGear5Rpm = 0  # 0 - 9000
-        #     #
-        #     # self.accelerometerAngel += 10
-        #     # if self.accelerometerAngel > 180: self.accelerometerAngel = -180  # -180 - +180
-        #     # self.accelerometerValue += 0.1
-        #     # if self.accelerometerValue > 1.0: self.accelerometerValue = 0.0  # 0.0 - 1.0
-        #     # self.steeringWheelEncoderAngel += 1
-        #     # if self.steeringWheelEncoderAngel > 7: self.steeringWheelEncoderAngel = -7  # -7 - +7
-        #     # if self.turnIndicatorState == TurnIndication.none:
-        #     #     self.turnIndicatorState = TurnIndication.left
-        #     # elif self.turnIndicatorState == TurnIndication.left:
-        #     #     self.turnIndicatorState = TurnIndication.right
-        #     # elif self.turnIndicatorState == TurnIndication.right:
-        #     #     self.turnIndicatorState = TurnIndication.both
-        #     # else:
-        #     #     self.turnIndicatorState = TurnIndication.none
-        #     # self.gearNumberValue += 1
-        #     # if self.gearNumberValue > 5: self.gearNumberValue = 0  # 0 - 5
-        #     # self.speedometerValue += 1
-        #     # if self.speedometerValue > 999:  self.speedometerValue = 0  # 0 - 999
-        #     # self.stopwatchMills += 1
-        #     # if self.stopwatchMills > 99: self.stopwatchMills = 0  # 0 - 99
-        #     # self.stopwatchSeconds += 1
-        #     # if self.stopwatchSeconds > 59: self.stopwatchSeconds = 0  # 0 - 59
-        #     # self.stopwatchMinutes += 1
-        #     # if self.stopwatchMinutes > 59: self.stopwatchMinutes = 0  # 0 - 59
-        #     # self.stopwatchHours += 1
-        #     # if self.stopwatchHours > 9: self.stopwatchHours = 0  # 0 - 9
-        #     # self.oilManometerValue += 0.01
-        #     # if self.oilManometerValue > 9.99: self.oilManometerValue = 0.0  # 0.0 - 9.99
-        #     # self.oilThermometerValue += 1
-        #     # if self.oilThermometerValue > 999: self.oilThermometerValue = 0  # 0 - 999
-        #     # self.watterThermometerValue += 1
-        #     # if self.watterThermometerValue > 999: self.watterThermometerValue = 0  # 0 - 999
-        #     # self.odometerValue += 1
-        #     # if self.odometerValue > 9999: self.odometerValue = 0  # 0 - 9999
-        #     # self.dashboard.setTachometerEngine(self.tachometerEngineValueRpm, self.testLevel)
-        #     # self.dashboard.setTachometerGearbox(self.tachometerGearboxValueRpm, self.testLevel)
-        #     # self.dashboard.setTachometerGears(
-        #     #     self.tachometerGear1Rpm,
-        #     #     self.tachometerGear2Rpm,
-        #     #     self.tachometerGear3Rpm,
-        #     #     self.tachometerGear4Rpm,
-        #     #     self.tachometerGear5Rpm)
-        #     # self.dashboard.setAccelerometer(self.accelerometerAngel, self.accelerometerValue, self.testLevel)
-        #     # self.dashboard.setSteeringWheelEncoder(self.steeringWheelEncoderAngel, self.testLevel)
-        #     # self.dashboard.setTurnIndicator(self.turnIndicatorState, self.testLevel)
-        #     # self.dashboard.setGearNumber(self.gearNumberValue, self.testLevel)
-        #     # self.dashboard.setOilWarningIndicator(self.testLevel)
-        #     # self.dashboard.setWatterWarningIndicator(self.testLevel)
-        #     # self.dashboard.setSpeedometer(self.speedometerValue, self.testLevel)
-        #     # self.dashboard.setStopwatch(self.stopwatchMills, self.stopwatchSeconds, self.stopwatchMinutes,
-        #     #                             self.stopwatchHours, self.testLevel)
-        #     # self.dashboard.setOilManometer(self.oilManometerValue, self.testLevel)
-        #     # self.dashboard.setOilThermometer(self.oilThermometerValue, self.testLevel)
-        #     # self.dashboard.setWatterThermometer(self.watterThermometerValue, self.testLevel)
-        #     # self.dashboard.setOdometer(self.odometerValue, self.testLevel)
-        #
-        # except Exception as err:
-        #     traceback.print_exc()
-        #
-        #     print("FFFFFFFFFFFFFFFFFFFF err" + str(err.args))
-         
+        # TODO

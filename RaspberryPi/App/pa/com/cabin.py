@@ -54,10 +54,52 @@ class CabinCom(QObject):
         self.accelerometerY = 0.0
         self.accelerometerZ = 0.0
 
+        self.timer = 0
+
     # Worker job
 
     def job(self) -> None:
-        logging.debug(f"[CabinCom.job] Start processing")
+        logging.debug(f"[CabinCom.job]  Tick # {self.timer}")
+
+        if self.timer % 100 == 0:
+            self.raceModeIsOn = not self.raceModeIsOn
+            self.signals.outRaceModeIsOn.emit(self.raceModeIsOn)
+
+        if self.timer % 100 == 0:
+            self.stopwatchButtonIsOn = not self.stopwatchButtonIsOn
+            self.signals.outStopwatchButtonIsOn.emit(self.stopwatchButtonIsOn)
+
+        if self.timer % 100 == 0:
+            self.odometerButtonIsOn = not self.odometerButtonIsOn
+            self.signals.outOdometerButtonIsOn.emit(self.odometerButtonIsOn)
+        #
+        # if self.timer % 100 == 0:
+        #     self.turnLeftSignalIsOn = not self.turnLeftSignalIsOn
+        #     self.signals.outTurnLeftSignalIsOn.emit(self.turnLeftSignalIsOn)
+        #
+        # if self.timer % 100 == 0:
+        #     self.turnRightSignalIsOn = not self.turnRightSignalIsOn
+        #     self.signals.outTurnRightSignalIsOn.emit(self.turnRightSignalIsOn)
+        #
+        # if self.timer % 100 == 0:
+        #     self.steeringWhilePosition += 1
+        #     if self.steeringWhilePosition > 7:
+        #         self.steeringWhilePosition = -7
+        #     self.signals.outSteeringWhilePosition.emit(self.steeringWhilePosition)
+        #
+        # if self.timer % 100 == 0:
+        #     self.accelerometerX += 0.1
+        #     if self.accelerometerX > 10.0:
+        #         self.accelerometerX = -10.0
+        #     self.accelerometerY += 0.1
+        #     if self.accelerometerY > 10.0:
+        #         self.accelerometerY = -10.0
+        #     self.accelerometerZ += 0.1
+        #     if self.accelerometerZ > 10.0:
+        #         self.accelerometerZ = -10.0
+        #     self.signals.outAccelerometer.emit(self.accelerometerX, self.accelerometerY, self.accelerometerZ)
+
+        self.timer += 1
 
     # Methods
 
