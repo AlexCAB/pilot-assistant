@@ -20,12 +20,11 @@ created: 2019-11-9
 import os
 import logging
 from PyQt5.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsPixmapItem, QOpenGLWidget
-from PyQt5.QtCore import Qt, QPointF, QTimer, QRectF, pyqtSlot, QObject
+from PyQt5.QtCore import Qt, QPointF, pyqtSlot
 from PyQt5.QtGui import QPixmap, QPen, QBrush, QStandardItem, QPolygonF, QColor, QSurfaceFormat, QTransform
 from model.enums import *
 from .polygons_mapping import PolygonsMapping
 from typing import Dict, Tuple, Any, List
-import traceback
 
 
 class Dashboard(QGraphicsView):
@@ -44,7 +43,6 @@ class Dashboard(QGraphicsView):
     TACHOMETER_SCALING = 100
     ACCELEROMETER_MIN_ANGEL = 10
     ACCELEROMETER_MAX_ANGEL = 350
-    TURN_INDICATOR_FLASH_TIMEOUT = 500
 
     # Constructor
 
@@ -65,8 +63,8 @@ class Dashboard(QGraphicsView):
         self.accelerometerLevel = DashboardLevel.inactive
         self.steeringWheelEncoderAngel = 0  # -7 - +7
         self.steeringWheelEncoderLevel = DashboardLevel.inactive
-        self.turnIndicatorState = TurnIndication.none
-        self.turnIndicatorLevel = DashboardLevel.inactive
+        self.turnLeftIndicatorLevel = DashboardLevel.inactive
+        self.turnRightIndicatorLevel = DashboardLevel.inactive
         self.oilWarningIndicatorLevel = DashboardLevel.inactive
         self.watterWarningIndicatorLevel = DashboardLevel.inactive
         self.gearNumberValue = 0  # 0 - 5
@@ -147,11 +145,6 @@ class Dashboard(QGraphicsView):
         self.tachometerGearsBrushes = {
             "A": QBrush(self.TACHOMETER_GEARS_ARROW_COLOR, Qt.SolidPattern),
             "N": QBrush(self.TACHOMETER_GEARS_NUMBER_COLOR, Qt.SolidPattern)}
-
-
-
-
-
         def makeGearsTransforms(translate: QPointF, rotate: int):
             arrowTrans = QTransform()
             arrowTrans.translate(translate.x(), translate.y())
@@ -198,9 +191,6 @@ class Dashboard(QGraphicsView):
             return buildPolygonItem(initCoordinates["C"], initCoordinates["P"])
         self.turnIndicatorLeftItem = makeTurnIndicatorItem(PolygonsMapping.TURN_INDICATOR["L"])
         self.turnIndicatorRightItem = makeTurnIndicatorItem(PolygonsMapping.TURN_INDICATOR["R"])
-        self.turnIndicatorTimer = QTimer(self)
-        self.turnIndicatorTimer.timeout.connect(self.renderTurnIndicator)
-        self.turnIndicatorIsOn = True
         # Add warning indicators graphics
         def makeWarningIndicatorItems(initCoordinates: Dict[str, Any]):
             return [buildPolygonItem(initCoordinates["C"], p) for p in initCoordinates["P"]]
@@ -256,7 +246,8 @@ class Dashboard(QGraphicsView):
             self.tachometerGearboxItems, self.tachometerGearboxRpm, self.tachometerGearboxLevel)
         self.renderAccelerometer()
         self.renderSteeringWheelEncoder()
-        self.renderTurnIndicator()
+        self.renderTurnLeftIndicator()
+        self.renderTurnRightIndicator()
         self.renderOilWarningIndicator()
         self.renderWatterWarningIndicator()
         self.renderGearNumber()
@@ -310,7 +301,8 @@ class Dashboard(QGraphicsView):
         self.renderTachometerGear(5, self.tachometerGear5Rpm)
         self.renderAccelerometer()
         self.renderSteeringWheelEncoder()
-        self.renderTurnIndicator()
+        self.renderTurnLeftIndicator()
+        self.renderTurnRightIndicator()
         self.renderOilWarningIndicator()
         self.renderWatterWarningIndicator()
         self.renderGearNumber()
@@ -366,28 +358,13 @@ class Dashboard(QGraphicsView):
                 p.setPen(self.levelPens[DashboardLevel.inactive])
                 p.setBrush(self.levelBrushes[DashboardLevel.inactive])
 
-    def renderTurnIndicator(self) -> None:
-        newLPen = self.levelPens[DashboardLevel.inactive]
-        newRPen = self.levelPens[DashboardLevel.inactive]
-        newLBrush = self.levelBrushes[DashboardLevel.inactive]
-        newRBrush = self.levelBrushes[DashboardLevel.inactive]
-        if self.turnIndicatorIsOn and self.turnIndicatorState != TurnIndication.none:
-            if self.turnIndicatorState == TurnIndication.left or self.turnIndicatorState == TurnIndication.both:
-                newLPen = self.levelPens[self.turnIndicatorLevel]
-                newLBrush = self.levelBrushes[self.turnIndicatorLevel]
-            if self.turnIndicatorState == TurnIndication.right or self.turnIndicatorState == TurnIndication.both:
-                newRPen = self.levelPens[self.turnIndicatorLevel]
-                newRBrush = self.levelBrushes[self.turnIndicatorLevel]
-        self.turnIndicatorLeftItem.setPen(newLPen)
-        self.turnIndicatorLeftItem.setBrush(newLBrush)
-        self.turnIndicatorRightItem.setPen(newRPen)
-        self.turnIndicatorRightItem.setBrush(newRBrush)
-        if self.turnIndicatorState != TurnIndication.none:
-            self.turnIndicatorIsOn = not self.turnIndicatorIsOn
-            self.turnIndicatorTimer.start(self.TURN_INDICATOR_FLASH_TIMEOUT)
-        else:
-            self.turnIndicatorIsOn = True
-            self.turnIndicatorTimer.stop()
+    def renderTurnLeftIndicator(self) -> None:
+        self.turnIndicatorLeftItem.setPen(self.levelPens[self.turnLeftIndicatorLevel])
+        self.turnIndicatorLeftItem.setBrush(self.levelBrushes[self.turnLeftIndicatorLevel])
+
+    def renderTurnRightIndicator(self) -> None:
+        self.turnIndicatorRightItem.setPen(self.levelPens[self.turnRightIndicatorLevel])
+        self.turnIndicatorRightItem.setBrush(self.levelBrushes[self.turnRightIndicatorLevel])
 
     def renderOilWarningIndicator(self) -> None:
         for p in self.oilWarningIndicatorItems:
@@ -445,7 +422,7 @@ class Dashboard(QGraphicsView):
         v0100 = (self.odometerValue % 1000) // 100
         v1000 = self.odometerValue // 1000
         def level(isActive: bool):
-             return self.odometerLevel if isActive > 0 else DashboardLevel.inactive
+            return self.odometerLevel if isActive > 0 else DashboardLevel.inactive
         self.renderNumberHelper(v0001, self.watterOdometer0001Items, self.odometerLevel)
         self.renderNumberHelper(v0010, self.watterOdometer0010Items, level(v0010 > 0 or v0100 > 0 or v1000 > 0))
         self.renderNumberHelper(v0100, self.watterOdometer0100Items, level(v0100 > 0 or v1000 > 0))
@@ -518,14 +495,21 @@ class Dashboard(QGraphicsView):
         # Redraw UI
         self.renderSteeringWheelEncoder()
 
-    @pyqtSlot(TurnIndication, DashboardLevel)
-    def inTurnIndicator(self, state: TurnIndication, level: DashboardLevel) -> None:
-        logging.debug(f"[Dashboard.inTurnIndicator] New state = {state}, level = {level}")
+    @pyqtSlot(DashboardLevel)
+    def inTurnLeftIndicator(self, level: DashboardLevel) -> None:
+        logging.debug(f"[Dashboard.inTurnLeftIndicator] New level = {level}")
         # Store new state
-        self.turnIndicatorState = state
-        self.turnIndicatorLevel = level
+        self.turnLeftIndicatorLevel = level
         # Redraw UI
-        self.renderTurnIndicator()
+        self.renderTurnLeftIndicator()
+
+    @pyqtSlot(DashboardLevel)
+    def inTurnRightIndicator(self, level: DashboardLevel) -> None:
+        logging.debug(f"[Dashboard.inTurnRightIndicator] New level = {level}")
+        # Store new state
+        self.turnRightIndicatorLevel = level
+        # Redraw UI
+        self.renderTurnRightIndicator()
 
     @pyqtSlot(int)
     def inGearNumber(self, value: int) -> None:

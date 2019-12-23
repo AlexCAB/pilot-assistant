@@ -30,10 +30,3 @@ class DashboardLevel(Enum):
     ok = 1
     warning = 2
     dangerous = 3
-
-
-class TurnIndication(Enum):
-    none = 0
-    left = 1
-    right = 2
-    both = 3

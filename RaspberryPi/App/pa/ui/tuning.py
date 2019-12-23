@@ -24,7 +24,7 @@ from PyQt5.QtWidgets import QMainWindow, QPushButton, QHBoxLayout, QWidget
 from PyQt5.QtCore import Qt, QMargins, QCoreApplication
 from PyQt5.QtGui import QPainter, QPixmap
 from model.enums import DriveMode
-from typing import Callable
+from typing import Callable, Any
 
 
 class Tuning(QMainWindow):
@@ -36,7 +36,7 @@ class Tuning(QMainWindow):
 
     # Constructor
 
-    def __init__(self, onExit: Callable[[], None]):
+    def __init__(self, onExit: Callable[[], Any]):
         # Init
         super(Tuning, self).__init__()
         self.onExit = onExit

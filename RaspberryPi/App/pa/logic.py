@@ -18,6 +18,7 @@ created: 2019-12-4
 """
 
 import logging
+import math
 import time
 
 from PyQt5.QtCore import  pyqtSlot, QObject, pyqtSignal
@@ -34,7 +35,8 @@ class LogicSignals(QObject):
     outTachometerGears        = pyqtSignal(int, int, int, int, int)  # (rpm1, rpm2, rpm3, rpm4, rpm5)
     outAccelerometer          = pyqtSignal(int, float, DashboardLevel)  # (angel, value, level)
     outSteeringWheelEncoder   = pyqtSignal(int, DashboardLevel)  # (angel, level)
-    outTurnIndicator          = pyqtSignal(TurnIndication, DashboardLevel)  # (state, level)
+    outTurnLeftIndicator      = pyqtSignal(DashboardLevel)  # (level)
+    outTurnRightIndicator     = pyqtSignal(DashboardLevel)  # (level)
     outGearNumber             = pyqtSignal(int)  # (value, level)
     outOilWarningIndicator    = pyqtSignal(DashboardLevel)  # (level)
     outWatterWarningIndicator = pyqtSignal(DashboardLevel)  # (level)
@@ -64,10 +66,14 @@ class Logic(QObject):
         self.watterWarningIndicator = DashboardLevel.inactive
         self.distance = 0
         self.odometerLevel = DashboardLevel.ok
-
-
+        self.timeCountIsReset = True
+        self.timeCountIsStarted = False
+        self.startTime = 0  # in mills
 
     # Helpers
+
+    def getTimeMills(self) -> int:
+        return int(round(time.time() * 1000))
 
     def setOilWarningIndicator(self) -> None:
         newLevel = DashboardLevel.inactive
@@ -79,10 +85,21 @@ class Logic(QObject):
             self.signals.outOilWarningIndicator.emit(newLevel)
             self.oilWarningIndicator = newLevel
 
+    def setStopwatch(self, level: DashboardLevel) -> None:
+        period = self.getTimeMills() - self.startTime
+        mills = (period // 10) % 100
+        seconds = (period // 1000) % 60
+        minutes = (period // (60 * 1000)) % 60
+        hours = (period // (60 * 60 * 1000)) % 10
+        self.signals.outStopwatch.emit(mills, seconds, minutes, hours, level)
+
     # Worker job
 
     def job(self) -> None:
         logging.debug(f"[Logic.job] Start processing")
+        # Update stopwatch
+        if self.timeCountIsStarted:
+            self.setStopwatch(DashboardLevel.dangerous)
 
     # Input
 
@@ -213,9 +230,20 @@ class Logic(QObject):
 
     @pyqtSlot(bool)
     def inStopwatchButtonIsOn(self, isOn: bool) -> None:
-        logging.debug(f"[Logic.inStopwatchButtonIsOn] New isOn = ${isOn}")
-
-        # TODO
+        logging.debug(
+            f"[Logic.inStopwatchButtonIsOn] New isOn = ${isOn}, self.timeCountIsReset = {self.timeCountIsReset}, "
+            f"self.timeCountIsStarted = {self.timeCountIsStarted}, self.startTime = {self.startTime}")
+        if isOn and self.timeCountIsReset and not self.timeCountIsStarted:
+            self.timeCountIsReset = False
+            self.timeCountIsStarted = True
+            self.startTime = self.getTimeMills()
+            self.setStopwatch(DashboardLevel.dangerous)
+        elif isOn and not self.timeCountIsReset and self.timeCountIsStarted:
+            self.timeCountIsStarted = False
+            self.setStopwatch(DashboardLevel.warning)
+        elif not isOn and not self.timeCountIsReset and not self.timeCountIsStarted:
+            self.timeCountIsReset = True
+            self.signals.outStopwatch.emit(0, 0, 0, 0, DashboardLevel.ok)
 
     @pyqtSlot(bool)
     def inOdometerButtonIsOn(self, isOn: bool) -> None:
@@ -230,23 +258,45 @@ class Logic(QObject):
     @pyqtSlot(bool)
     def inTurnLeftSignalIsOn(self, isOn: bool) -> None:
         logging.debug(f"[Logic.inTurnLeftSignalIsOn] New isOn = ${isOn}")
-
-        # TODO
+        self.signals.outTurnLeftIndicator.emit(
+            DashboardLevel.ok if isOn else DashboardLevel.inactive)
 
     @pyqtSlot(bool)
     def inTurnRightSignalIsOn(self, isOn: bool) -> None:
         logging.debug(f"[Logic.inTurnRightSignalIsOn] New isOn = ${isOn}")
-
-        # TODO
+        self.signals.outTurnRightIndicator.emit(
+            DashboardLevel.ok if isOn else DashboardLevel.inactive)
 
     @pyqtSlot(int)
     def inSteeringWhilePosition(self, value: int) -> None:
         logging.debug(f"[Logic.inSteeringWhilePosition] New value = ${value}")
-
-        # TODO
+        level = DashboardLevel.ok
+        if abs(value) >= self.config.steeringWheelEncoderWarning:
+            level = DashboardLevel.warning
+        if abs(value) >= self.config.steeringWheelEncoderDangerous:
+            level = DashboardLevel.dangerous
+        self.signals.outSteeringWheelEncoder.emit(value, level)
 
     @pyqtSlot(float, float, float)
     def inAccelerometer(self, x: float, y: float, z: float) -> None:
         logging.debug(f"[Logic.inAccelerometer] New x = ${x}, y = ${y}, z = ${z}")
-
-        # TODO
+        angel = math.degrees(math.atan(y / abs(x))) if x != 0.0 else 0.0
+        if x < 0 and y < 0:
+            angel += -90
+        elif x < 0:
+            angel += 90
+        value = math.sqrt((x * x) + (y * y)) * self.config.accelerometerScale
+        level = DashboardLevel.ok
+        if self.driveMode == DriveMode.race:
+            if value <= self.config.accelerometerRaceMinWarning \
+                    or value >= self.config.accelerometerRaceMaxWarning:
+                level = DashboardLevel.warning
+            if value <= self.config.accelerometerRaceMinDangerous \
+                    or value >= self.config.accelerometerRaceMaxDangerous:
+                level = DashboardLevel.dangerous
+        else:
+            if value >= self.config.accelerometerStreetMaxWarning:
+                level = DashboardLevel.warning
+            if value >= self.config.accelerometerStreetMaxDangerous:
+                level = DashboardLevel.dangerous
+        self.signals.outAccelerometer.emit(angel, value, level)

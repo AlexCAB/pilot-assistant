@@ -65,39 +65,39 @@ class CabinCom(QObject):
             self.raceModeIsOn = not self.raceModeIsOn
             self.signals.outRaceModeIsOn.emit(self.raceModeIsOn)
 
-        if self.timer % 100 == 0:
+        if self.timer % 20 == 0:
             self.stopwatchButtonIsOn = not self.stopwatchButtonIsOn
             self.signals.outStopwatchButtonIsOn.emit(self.stopwatchButtonIsOn)
 
         if self.timer % 100 == 0:
             self.odometerButtonIsOn = not self.odometerButtonIsOn
             self.signals.outOdometerButtonIsOn.emit(self.odometerButtonIsOn)
-        #
-        # if self.timer % 100 == 0:
-        #     self.turnLeftSignalIsOn = not self.turnLeftSignalIsOn
-        #     self.signals.outTurnLeftSignalIsOn.emit(self.turnLeftSignalIsOn)
-        #
-        # if self.timer % 100 == 0:
-        #     self.turnRightSignalIsOn = not self.turnRightSignalIsOn
-        #     self.signals.outTurnRightSignalIsOn.emit(self.turnRightSignalIsOn)
-        #
-        # if self.timer % 100 == 0:
-        #     self.steeringWhilePosition += 1
-        #     if self.steeringWhilePosition > 7:
-        #         self.steeringWhilePosition = -7
-        #     self.signals.outSteeringWhilePosition.emit(self.steeringWhilePosition)
-        #
-        # if self.timer % 100 == 0:
-        #     self.accelerometerX += 0.1
-        #     if self.accelerometerX > 10.0:
-        #         self.accelerometerX = -10.0
-        #     self.accelerometerY += 0.1
-        #     if self.accelerometerY > 10.0:
-        #         self.accelerometerY = -10.0
-        #     self.accelerometerZ += 0.1
-        #     if self.accelerometerZ > 10.0:
-        #         self.accelerometerZ = -10.0
-        #     self.signals.outAccelerometer.emit(self.accelerometerX, self.accelerometerY, self.accelerometerZ)
+
+        if self.timer % 10 == 0:
+            self.turnLeftSignalIsOn = not self.turnLeftSignalIsOn
+            self.signals.outTurnLeftSignalIsOn.emit(self.turnLeftSignalIsOn)
+
+        if self.timer % 5 == 0:
+            self.turnRightSignalIsOn = not self.turnRightSignalIsOn
+            self.signals.outTurnRightSignalIsOn.emit(self.turnRightSignalIsOn)
+
+        if self.timer % 10 == 0:
+            self.steeringWhilePosition += 1
+            if self.steeringWhilePosition > 7:
+                self.steeringWhilePosition = -7
+            self.signals.outSteeringWhilePosition.emit(self.steeringWhilePosition)
+
+        if self.timer % 1 == 0:
+            self.accelerometerX += 0.5
+            if self.accelerometerX > 10.0:
+                self.accelerometerX = -10.0
+            self.accelerometerY += 0.2
+            if self.accelerometerY > 10.0:
+                self.accelerometerY = -10.0
+            self.accelerometerZ += 0.5
+            if self.accelerometerZ > 10.0:
+                self.accelerometerZ = -10.0
+            self.signals.outAccelerometer.emit(self.accelerometerX, self.accelerometerY, self.accelerometerZ)
 
         self.timer += 1
 
