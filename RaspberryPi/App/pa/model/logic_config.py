@@ -55,6 +55,7 @@ class LogicConfig:
     accelerometerStreetMaxWarning: float
     accelerometerStreetMaxDangerous: float
     # Steering wheel encoder
+    steeringWheelEncoderScaling: int
     steeringWheelEncoderWarning: int
     steeringWheelEncoderDangerous: int
     # Speedometer
@@ -118,6 +119,7 @@ class LogicConfig:
         self.accelerometerStreetMaxWarning       = config.getfloat(a, "AccelerometerStreetMaxWarning")
         self.accelerometerStreetMaxDangerous     = config.getfloat(a, "AccelerometerStreetMaxDangerous")
         swe = "STEERING_WHEEL_ENCODER"
+        self.steeringWheelEncoderScaling         = config.getfloat(swe, "SteeringWheelEncoderScaling")
         self.steeringWheelEncoderWarning         = config.getint(swe, "SteeringWheelEncoderWarning")
         self.steeringWheelEncoderDangerous       = config.getint(swe, "SteeringWheelEncoderDangerous")
         s = "SPEEDOMETER"

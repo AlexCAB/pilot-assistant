@@ -18,11 +18,13 @@ created: 2019-12-13
 """
 
 import logging
-import time
 
-from PyQt5.QtCore import QRunnable, pyqtSlot, QObject, pyqtSignal, QThread
+from PyQt5.QtCore import  QObject, pyqtSignal
+from gpiozero.pins.pigpio import PiGPIOFactory
 
 from worker import Worker
+
+from gpiozero import Button
 
 
 class CabinComSignals(QObject):
@@ -37,6 +39,18 @@ class CabinComSignals(QObject):
 
 class CabinCom(QObject):
 
+    # Parameters
+
+    PIN_DRIVE_MODE = 17
+    PIN_STOPWATCH = 27
+    PIN_ODOMETER = 22
+    PIN_TERN_LEFT = 23
+    PIN_TURN_RIGHT = 24
+    PIN_STEERING_ENCODER_CLK = 5
+    PIN_STEERING_ENCODER_DT = 6
+    PIN_STEERING_ENCODER_SW = 26
+    PIN_STEERING_ENCODER_MAX_COUNT = 7
+
     # Constructor
 
     def __init__(self) -> None:
@@ -44,103 +58,115 @@ class CabinCom(QObject):
         super(CabinCom, self).__init__()
         self.signals = CabinComSignals()
         self.worker = Worker(timeout=0.1, job=self.job)
+        self.doInit = True
+        self.timer = 0
         self.raceModeIsOn = False
-        self.stopwatchButtonIsOn = False
-        self.odometerButtonIsOn = False
         self.turnLeftSignalIsOn = False
         self.turnRightSignalIsOn = False
-        self.steeringWhilePosition = 0  # -7 - +7
+        self.steeringWhilePosition = 0
         self.accelerometerX = 0.0
         self.accelerometerY = 0.0
         self.accelerometerZ = 0.0
-
-        self.timer = 0
+        # Init driving mode switch
+        self.drivingModeSwitch = Button(self.PIN_DRIVE_MODE, bounce_time=.01)
+        # Init stopwatch button
+        self.stopwatchButton = Button(self.PIN_STOPWATCH, pull_up=False, bounce_time=.01)
+        self.stopwatchButton.when_activated = self.stopwatchIsPressed
+        self.stopwatchButton.when_deactivated = self.stopwatchIsReleased
+        # Init odometer button
+        self.odometerButton = Button(self.PIN_ODOMETER, pull_up=False, bounce_time=.01)
+        self.odometerButton.when_activated = self.odometerIsPressed
+        self.odometerButton.when_deactivated = self.odometerIsReleased
+        # Init turn left button
+        self.turnLeftSignalButton = Button(self.PIN_TERN_LEFT, pull_up=False, bounce_time=.01)
+        # Init turn right button
+        self.turnRightSignalButton = Button(self.PIN_TURN_RIGHT, pull_up=False, bounce_time=.01)
+        # Init steering while encoder
+        self.steeringWheelEncoderClkButton = Button(self.PIN_STEERING_ENCODER_CLK, bounce_time=.002)
+        self.steeringWheelEncoderClkButton.when_activated = self.steeringWheelEncoderClkIsPressed
+        self.steeringWheelEncoderDtButton = Button(self.PIN_STEERING_ENCODER_DT,  bounce_time=.002)
+        self.steeringWheelEncoderDtButton.when_activated = self.steeringWheelEncoderDtIsPressed
+        self.steeringWheelEncoderSwButton = Button(self.PIN_STEERING_ENCODER_SW, bounce_time=.01)
+        self.steeringWheelEncoderSwButton.when_activated = self.steeringWheelEncoderSwIsPressed
 
     # Worker job
 
     def job(self) -> None:
         logging.debug(f"[CabinCom.job]  Tick # {self.timer}")
+        # Set driving mode
+        if self.drivingModeSwitch.value != self.raceModeIsOn or self.doInit:
+            self.signals.outRaceModeIsOn.emit(self.drivingModeSwitch.value)
+            self.raceModeIsOn = self.drivingModeSwitch.value
+        # Set stopwatch
+        if self.doInit:
+            self.signals.outStopwatchButtonIsOn.emit(self.stopwatchButton.value)
+        # Set odometer
+        if self.doInit:
+            self.signals.outOdometerButtonIsOn.emit(self.odometerButton.value)
+        # Set turn left
+        if self.turnLeftSignalButton.value != self.turnLeftSignalIsOn or self.doInit:
+            self.signals.outTurnLeftSignalIsOn.emit(self.turnLeftSignalButton.value)
+            self.turnLeftSignalIsOn = self.turnLeftSignalButton.value
+        # Set turn right
+        if self.turnRightSignalButton.value != self.turnRightSignalIsOn or self.doInit:
+            self.signals.outTurnRightSignalIsOn.emit(self.turnRightSignalButton.value)
+            self.turnRightSignalIsOn = self.turnRightSignalButton.value
+        # Set steering while encoder
+        if self.doInit and self.steeringWheelEncoderSwButton.value:
+            self.signals.outSteeringWhilePosition.emit(0)
+        # Reset do init flag
+        self.doInit = False
 
-        if self.timer % 100 == 0:
-            self.raceModeIsOn = not self.raceModeIsOn
-            self.signals.outRaceModeIsOn.emit(self.raceModeIsOn)
 
-        if self.timer % 20 == 0:
-            self.stopwatchButtonIsOn = not self.stopwatchButtonIsOn
-            self.signals.outStopwatchButtonIsOn.emit(self.stopwatchButtonIsOn)
 
-        if self.timer % 100 == 0:
-            self.odometerButtonIsOn = not self.odometerButtonIsOn
-            self.signals.outOdometerButtonIsOn.emit(self.odometerButtonIsOn)
 
-        if self.timer % 10 == 0:
-            self.turnLeftSignalIsOn = not self.turnLeftSignalIsOn
-            self.signals.outTurnLeftSignalIsOn.emit(self.turnLeftSignalIsOn)
-
-        if self.timer % 5 == 0:
-            self.turnRightSignalIsOn = not self.turnRightSignalIsOn
-            self.signals.outTurnRightSignalIsOn.emit(self.turnRightSignalIsOn)
-
-        if self.timer % 10 == 0:
-            self.steeringWhilePosition += 1
-            if self.steeringWhilePosition > 7:
-                self.steeringWhilePosition = -7
-            self.signals.outSteeringWhilePosition.emit(self.steeringWhilePosition)
-
-        if self.timer % 1 == 0:
-            self.accelerometerX += 0.5
-            if self.accelerometerX > 10.0:
-                self.accelerometerX = -10.0
-            self.accelerometerY += 0.2
-            if self.accelerometerY > 10.0:
-                self.accelerometerY = -10.0
-            self.accelerometerZ += 0.5
-            if self.accelerometerZ > 10.0:
-                self.accelerometerZ = -10.0
-            self.signals.outAccelerometer.emit(self.accelerometerX, self.accelerometerY, self.accelerometerZ)
+        # if self.timer % 1 == 0:
+        #     self.accelerometerX += 0.5
+        #     if self.accelerometerX > 10.0:
+        #         self.accelerometerX = -10.0
+        #     self.accelerometerY += 0.2
+        #     if self.accelerometerY > 10.0:
+        #         self.accelerometerY = -10.0
+        #     self.accelerometerZ += 0.5
+        #     if self.accelerometerZ > 10.0:
+        #         self.accelerometerZ = -10.0
+        #     self.signals.outAccelerometer.emit(self.accelerometerX, self.accelerometerY, self.accelerometerZ)
 
         self.timer += 1
 
-    # Methods
+    # Functions
 
-    def getRaceModeIsOn(self) -> bool:
+    def stopwatchIsPressed(self) -> None:
+        logging.debug(f"[Logic.stopwatchIsPressed] Emmit outStopwatchButtonIsOn = True")
+        self.signals.outStopwatchButtonIsOn.emit(True)
 
-        # TODO Get real value
+    def stopwatchIsReleased(self) -> None:
+        logging.debug(f"[Logic.stopwatchIsReleased] Emmit outStopwatchButtonIsOn = False")
+        self.signals.outStopwatchButtonIsOn.emit(False)
 
-        return self.raceModeIsOn
+    def odometerIsPressed(self) -> None:
+        logging.debug(f"[Logic.odometerIsPressed] Emmit outOdometerButtonIsOn = True")
+        self.signals.outOdometerButtonIsOn.emit(True)
 
-    def getStopwatchButtonIsOn(self) -> bool:
+    def odometerIsReleased(self) -> None:
+        logging.debug(f"[Logic.odometerIsReleased] Emmit outOdometerButtonIsOn = False")
+        self.signals.outOdometerButtonIsOn.emit(False)
 
-        # TODO Get real value
+    def steeringWheelEncoderClkIsPressed(self) -> None:
+        logging.debug(f"[Logic.steeringWheelEncoderClkIsPressed] Decrease position.")
+        if self.steeringWheelEncoderDtButton.value and \
+                self.steeringWhilePosition > -self.PIN_STEERING_ENCODER_MAX_COUNT:
+            self.steeringWhilePosition -= 1
+            self.signals.outSteeringWhilePosition.emit(self.steeringWhilePosition)
 
-        return self.stopwatchButtonIsOn
+    def steeringWheelEncoderDtIsPressed(self) -> None:
+        logging.debug(f"[Logic.steeringWheelEncoderDtIsPressed] Increase position.")
+        if self.steeringWheelEncoderClkButton.value and \
+                self.steeringWhilePosition < self.PIN_STEERING_ENCODER_MAX_COUNT:
+            self.steeringWhilePosition += 1
+            self.signals.outSteeringWhilePosition.emit(self.steeringWhilePosition)
 
-    def getOdometerButtonIsOn(self) -> bool:
-
-        # TODO Get real value
-
-        return self.odometerButtonIsOn
-
-    def getTurnLeftSignalIsOn(self) -> bool:
-
-        # TODO Get real value
-
-        return self.turnLeftSignalIsOn
-
-    def getTurnRightSignalIsOn(self) -> bool:
-
-        # TODO Get real value
-
-        return self.turnRightSignalIsOn
-
-    def getSteeringWhilePosition(self) -> int:
-
-        # TODO Get real value
-
-        return self.steeringWhilePosition
-
-    def getAccelerometer(self) -> (float, float, float):  # Returns: (x, y, z)
-
-        # TODO Get real value
-
-        return self.accelerometerX, self.accelerometerY, self.accelerometerZ
+    def steeringWheelEncoderSwIsPressed(self) -> None:
+        logging.debug(f"[Logic.steeringWheelEncoderSwIsPressed] Reset position.")
+        self.steeringWhilePosition = 0
+        self.signals.outSteeringWhilePosition.emit(0)
